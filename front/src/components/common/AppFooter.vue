@@ -7,8 +7,8 @@
 <style scoped>
 .footer {
   text-align: center;
-  padding: 20px;
-  background-color: #f5f7fa;
-  color: #909399;
+  padding: var(--spacing-lg);
+  background-color: var(--color-bg-secondary);
+  color: var(--color-text-muted);
 }
 </style>

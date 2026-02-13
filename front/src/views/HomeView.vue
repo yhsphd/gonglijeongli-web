@@ -3,7 +3,6 @@ import { Carousel, Slide, Pagination, Navigation } from "vue3-carousel";
 import "vue3-carousel/carousel.css";
 
 import ListBox from "@/components/home/ListBox.vue";
-import TwitterTimeline from "@/components/home/TwitterTimeline.vue";
 import PostEntry from "@/components/home/PostEntry.vue";
 
 const carouselConfig = {
@@ -11,7 +10,6 @@ const carouselConfig = {
   snapAlign: "center" as const,
   wrapAround: true,
   autoplay: 5000,
-  gap: 16,
 };
 
 const heroSrcRoot = "/assets/home/carousel/";
@@ -65,8 +63,8 @@ const heroList = [
 
 <style scoped>
 .hero {
-  height: 400px;
-  margin: 0 -32px 16px -32px;
+  height: var(--hero-height);
+  margin: 0 calc(var(--hero-margin) * -1) var(--spacing-md) calc(var(--hero-margin) * -1);
 }
 .hero :deep(.carousel__viewport) {
   mask-image: linear-gradient(to right, transparent 0%, black 10%, black 90%, transparent 100%);
@@ -83,15 +81,16 @@ const heroList = [
   width: 100%;
   height: 100%;
   overflow: hidden;
-  border-radius: 8px;
-  border: 1px solid rgba(0, 0, 0, 0.3);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
+  margin: 0 var(--hero-item-margin);
 }
 .carousel__bg {
   position: absolute;
   inset: 0;
   background-size: cover;
   background-position: center;
-  filter: blur(20px);
+  filter: var(--blur-md);
   transform: scale(1.1);
   z-index: 0;
 }
@@ -104,24 +103,24 @@ const heroList = [
 }
 .hero :deep(.carousel__next),
 .hero :deep(.carousel__prev) {
-  margin: 0 40px;
+  margin: 0 var(--hero-nav-margin);
 }
 
 .list-boxes {
   width: 100%;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(25rem, 1fr));
+  gap: var(--spacing-md);
 }
 .twitter-wrapper {
   width: 100%;
-  height: 400px;
+  height: var(--twitter-height);
   overflow: hidden;
 }
 .twitter-embed {
-  width: calc((100% + 10px) / 0.7); /* 스크롤바 너비만큼 추가 + 축소 보정 */
-  height: calc((100% + 24px) / 0.7);
-  margin-top: calc(-24px / 0.7);
+  width: calc((100% + 0.625rem) / 0.7); /* 스크롤바 너비만큼 추가 + 축소 보정 */
+  height: calc((100% + 1.5rem) / 0.7);
+  margin-top: calc(-1.5rem / 0.7);
   border: none;
   transform: scale(0.7);
   transform-origin: top left;

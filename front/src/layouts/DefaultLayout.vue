@@ -57,23 +57,23 @@ onUnmounted(() => {
 
 .header {
   position: fixed;
-  top: 24px;
+  top: var(--layout-header-top);
   z-index: 999999;
 }
 
 .main {
-  width: 1000px;
+  width: var(--layout-content-width);
   margin: 0 auto;
   flex: 1;
 
   display: flex;
   flex-direction: column;
 
-  background: rgba(255, 255, 255, 0.8);
-  box-shadow: 0px 0px 8px rgba(0, 0, 0, 0.25);
+  background: var(--color-bg-overlay-light);
+  box-shadow: var(--shadow-sm);
 }
 .content {
-  padding: 154px 32px 32px;
+  padding: 10rem var(--spacing-2xl) var(--spacing-2xl);
   flex-grow: 1;
 }
 
@@ -83,7 +83,7 @@ onUnmounted(() => {
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(255, 255, 255, 0.7);
+  background: var(--color-bg-overlay);
   z-index: -1;
 }
 .bg-image {
@@ -100,6 +100,6 @@ onUnmounted(() => {
   transform: translate(-50%, -50%);
   width: 100vw;
   z-index: -3;
-  filter: blur(20px);
+  filter: var(--blur-md);
 }
 </style>

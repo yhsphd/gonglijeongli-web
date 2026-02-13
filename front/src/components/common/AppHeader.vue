@@ -30,32 +30,32 @@ const menus = [
 .master-app-header {
   position: fixed;
   width: 100%;
-  height: 96px;
+  height: var(--layout-header-height);
 
   display: flex;
   justify-content: center;
 
-  background: rgba(255, 255, 255, 0.7);
+  background: var(--color-bg-overlay);
   border-width: 1px 0px;
   border-style: solid;
-  border-color: rgba(0, 0, 0, 0.3);
-  box-shadow: 0px 4px 30px 4px rgba(0, 0, 0, 0.15);
-  backdrop-filter: blur(2.5px);
+  border-color: var(--color-border);
+  box-shadow: var(--shadow-md);
+  backdrop-filter: var(--blur-sm);
 }
 .contents {
-  width: 1000px;
+  width: var(--layout-content-width);
   display: flex;
   align-items: center;
-  padding: 0px 36px;
+  padding: 0 var(--spacing-2-25xl);
 }
 
 .logo-container {
   position: relative;
-  height: 54px;
+  height: var(--header-logo-height);
 }
 .logo-container > img {
   position: absolute;
-  height: 54px;
+  height: var(--header-logo-height);
 }
 .logo-container > img:nth-child(2) {
   opacity: 0.5;
@@ -63,17 +63,17 @@ const menus = [
 }
 
 .nav {
-  width: 96px;
+  width: var(--header-nav-width);
   text-align: center;
 
   font-style: normal;
   text-decoration: none;
-  color: black;
+  color: var(--color-text-primary);
 }
 .nav > p:nth-child(1) {
-  font-size: 24px;
+  font-size: var(--font-size-lg);
 }
 .nav > p:nth-child(2) {
-  font-size: 12px;
+  font-size: var(--font-size-xs);
 }
 </style>

@@ -21,7 +21,7 @@ defineProps({
 
 <style scoped>
 .master-list-box {
-  backdrop-filter: blur(2.5px);
+  backdrop-filter: var(--blur-sm);
 }
 
 .box-top {
@@ -32,24 +32,21 @@ defineProps({
 }
 .box-top > *:nth-child(1),
 .box-top > *:nth-child(3) {
-  background: rgba(0, 0, 0, 0.3);
+  background: var(--color-border);
 }
 .box-top > *:nth-child(1) {
-  width: 20px;
+  width: var(--spacing-lg);
 }
 .box-top > *:nth-child(2) {
   margin-top: -0.5em;
-  padding: 0 8px;
+  padding: 0 var(--spacing-sm);
 }
 
 .content {
-  /* border: 1px solid rgba(0, 0, 0, 0.3); */
   border-width: 1px;
-  border-color: rgba(0, 0, 0, 0.3);
+  border-color: var(--color-border);
   border-style: none solid solid solid;
-  padding: 0 16px;
-  /* background: rgba(0, 0, 0, 0.005); */
-  /* box-shadow: inset -4px -4px 4px rgba(0, 0, 0, 0.1); */
+  padding: 0 var(--spacing-md);
 }
 .spacer {
   height: 1em;

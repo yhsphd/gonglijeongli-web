@@ -20,12 +20,12 @@
 
 <style scoped>
 .master-post-entry {
-  --entry-height: 80px;
+  --entry-height: 5rem;
   height: var(--entry-height);
   border-style: none none solid none;
-  border-color: rgba(0, 0, 0, 0.3);
+  border-color: var(--color-border);
   border-width: 1px;
-  padding: 8px 0;
+  padding: var(--spacing-sm) 0;
 }
 .master-post-entry:last-child {
   border-bottom: none;
@@ -33,7 +33,7 @@
 .content {
   display: flex;
   height: 100%;
-  gap: 12px;
+  gap: var(--entry-gap);
 }
 .thumb-wrapper {
   flex-shrink: 0;
@@ -42,8 +42,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(0, 0, 0, 0.05);
-  border-radius: 4px;
+  background: var(--color-bg-subtle);
+  border-radius: var(--radius-xs);
   overflow: hidden;
 }
 .thumb {
@@ -57,28 +57,28 @@
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 4px;
+  gap: var(--spacing-xs);
 }
 .title {
   margin: 0;
-  font-size: 14px;
-  line-height: 1.2;
-  font-weight: 600;
-  color: #333;
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-snug);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 .date {
-  font-size: 12px;
-  line-height: 1;
-  color: #666;
+  font-size: var(--font-size-xs);
+  line-height: var(--line-height-tight);
+  color: var(--color-text-secondary);
 }
 .text {
   margin: 0;
-  font-size: 12px;
-  color: #666;
-  line-height: 1.2;
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  line-height: var(--line-height-snug);
   display: -webkit-box;
   -webkit-line-clamp: 1;
   line-clamp: 1;
