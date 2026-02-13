@@ -1,7 +1,7 @@
 <script setup lang="ts">
+import { ref, onMounted, onUnmounted } from "vue";
 import AppHeader from "@/components/common/AppHeader.vue";
 import AppFooter from "@/components/common/AppFooter.vue";
-import { ref, onMounted, onUnmounted } from "vue";
 
 const bgImageOffset = 10;
 const bgImageRef = ref<HTMLImageElement | null>(null);
