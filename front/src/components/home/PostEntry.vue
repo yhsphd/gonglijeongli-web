@@ -1,10 +1,10 @@
-<script lang="ts"></script>
+<script setup lang="ts"></script>
 
 <template>
   <div class="master-post-entry">
     <div class="content">
       <div class="thumb-wrapper">
-        <img class="thumb" src="/assets/hijiri.png" />
+        <img class="thumb" src="/assets/news/hijiri.png" />
       </div>
       <div class="text-content">
         <p class="title">[행사 공지] 미래세기로의 초대장 부스 안내</p>

@@ -14,8 +14,8 @@ const menus = [
   <div class="master-app-header">
     <div class="contents">
       <RouterLink class="logo-container" to="/">
-        <img src="/assets/logo.svg" />
-        <img src="/assets/logo.svg" />
+        <img src="@/assets/img/logo.svg" />
+        <img src="@/assets/img/logo.svg" />
       </RouterLink>
       <div class="flex-grow"></div>
       <RouterLink class="nav" v-for="(menu, i) in menus" :key="i" :to="menu.to">

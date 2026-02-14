@@ -13,10 +13,13 @@ declare module 'vue' {
   export interface GlobalComponents {
     AppFooter: typeof import('./src/components/common/AppFooter.vue')['default']
     AppHeader: typeof import('./src/components/common/AppHeader.vue')['default']
+    GalleryCarousel: typeof import('./src/components/home/GalleryCarousel.vue')['default']
+    HeroCarousel: typeof import('./src/components/home/HeroCarousel.vue')['default']
     ListBox: typeof import('./src/components/home/ListBox.vue')['default']
     PostEntry: typeof import('./src/components/home/PostEntry.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
+    ThumbEntry: typeof import('./src/components/home/ThumbEntry.vue')['default']
     TwitterTimeline: typeof import('./src/components/home/TwitterTimeline.vue')['default']
   }
 }

@@ -43,8 +43,13 @@ onUnmounted(() => {
       <AppFooter />
     </div>
     <div class="bg-dimmer"></div>
-    <img class="bg-image-sub" src="/assets/bg_resized.jpg" />
-    <img ref="bgImageRef" class="bg-image" :style="bgImageStyle" src="/assets/bg_resized.jpg" />
+    <img class="bg-image-sub" src="@/assets/img/bg_resized.jpg" />
+    <img
+      ref="bgImageRef"
+      class="bg-image"
+      :style="bgImageStyle"
+      src="@/assets/img/bg_resized.jpg"
+    />
   </div>
 </template>
 

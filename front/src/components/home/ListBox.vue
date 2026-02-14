@@ -21,6 +21,8 @@ defineProps({
 
 <style scoped>
 .master-list-box {
+  display: flex;
+  flex-direction: column;
   backdrop-filter: var(--blur-sm);
 }
 
@@ -43,10 +45,11 @@ defineProps({
 }
 
 .content {
+  flex: 1;
   border-width: 1px;
   border-color: var(--color-border);
   border-style: none solid solid solid;
-  padding: 0 var(--spacing-md);
+  padding: 0 var(--spacing-md) 0.5em;
 }
 .spacer {
   height: 1em;
