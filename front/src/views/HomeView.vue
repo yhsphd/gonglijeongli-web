@@ -3,7 +3,7 @@ import ListBox from "@/components/home/ListBox.vue";
 import PostEntry from "@/components/home/PostEntry.vue";
 import ThumbEntry from "@/components/home/ThumbEntry.vue";
 import HeroCarousel from "@/components/home/HeroCarousel.vue";
-import GalleryCarousel from "@/components/home/GalleryCarousel.vue";
+// import GalleryCarousel from "@/components/home/GalleryCarousel.vue";
 </script>
 
 <template>
@@ -26,9 +26,9 @@ import GalleryCarousel from "@/components/home/GalleryCarousel.vue";
       </ListBox>
 
       <!-- GALLERY -->
-      <ListBox title="Gallery" class="gallery-box">
+      <!-- <ListBox title="Gallery" class="gallery-box">
         <GalleryCarousel />
-      </ListBox>
+      </ListBox> -->
 
       <!-- WORKS -->
       <ListBox title="Works">

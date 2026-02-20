@@ -41,7 +41,8 @@ const heroList = [
 <style scoped>
 .hero {
   height: var(--hero-height);
-  margin: 0 calc(var(--hero-margin) * -1) var(--spacing-md) calc(var(--hero-margin) * -1);
+  margin: 0 calc(var(--hero-margin) * -1) calc(var(--spacing-md) + 2rem)
+    calc(var(--hero-margin) * -1);
 }
 .hero :deep(.carousel__viewport) {
   mask-image: linear-gradient(to right, transparent 0%, black 10%, black 90%, transparent 100%);
@@ -81,5 +82,12 @@ const heroList = [
 .hero :deep(.carousel__next),
 .hero :deep(.carousel__prev) {
   margin: 0 var(--hero-nav-margin);
+}
+
+.hero :deep(.carousel__pagination) {
+  position: absolute;
+  bottom: calc(var(--spacing-md) * -1 - 0.25rem);
+  left: 50%;
+  transform: translateX(-50%);
 }
 </style>

@@ -1,10 +1,405 @@
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import { ref, computed } from "vue";
+
+// 임시 데이터 (추후 백엔드 API로 교체)
+const newsItems = ref([
+  {
+    id: 1,
+    title: "[행사 공지] 미래세기로의 초대장 부스 안내",
+    date: "2026.02.10",
+    thumb: "/assets/news/hijiri.png",
+    views: 128,
+    likes: 24,
+  },
+  {
+    id: 2,
+    title: "[신작 안내] 동방 팬북 '경계의 저편' 발매",
+    date: "2026.02.05",
+    thumb: "/assets/news/hijiri.png",
+    views: 256,
+    likes: 45,
+  },
+  {
+    id: 3,
+    title: "[통판 안내] 겨울 신작 통신판매 시작",
+    date: "2026.01.28",
+    thumb: "/assets/news/hijiri.png",
+    views: 189,
+    likes: 32,
+  },
+  {
+    id: 4,
+    title: "[행사 공지] 코믹월드 서울 참가 안내",
+    date: "2026.01.15",
+    thumb: "/assets/news/hijiri.png",
+    views: 312,
+    likes: 58,
+  },
+  {
+    id: 5,
+    title: "[공지] 2026년 활동 계획 안내",
+    date: "2026.01.01",
+    thumb: "/assets/news/hijiri.png",
+    views: 421,
+    likes: 73,
+  },
+  {
+    id: 6,
+    title: "[행사 후기] 코믹마켓 C105 참가 후기",
+    date: "2025.12.31",
+    thumb: "/assets/news/hijiri.png",
+    views: 534,
+    likes: 89,
+  },
+  {
+    id: 7,
+    title: "[신작 안내] 동방 일러스트집 예약 안내",
+    date: "2025.12.20",
+    thumb: "/assets/news/hijiri.png",
+    views: 287,
+    likes: 41,
+  },
+  {
+    id: 8,
+    title: "[통판 안내] 여름 신작 통신판매 종료 안내",
+    date: "2025.12.10",
+    thumb: "/assets/news/hijiri.png",
+    views: 156,
+    likes: 19,
+  },
+  {
+    id: 9,
+    title: "[행사 공지] 코믹마켓 C105 참가 안내",
+    date: "2025.11.25",
+    thumb: "/assets/news/hijiri.png",
+    views: 478,
+    likes: 67,
+  },
+  {
+    id: 10,
+    title: "[공지] 서클 홈페이지 오픈",
+    date: "2025.11.01",
+    thumb: "/assets/news/hijiri.png",
+    views: 623,
+    likes: 102,
+  },
+  {
+    id: 11,
+    title: "[행사 후기] 가을 온리전 참가 후기",
+    date: "2025.10.20",
+    thumb: "/assets/news/hijiri.png",
+    views: 345,
+    likes: 52,
+  },
+  {
+    id: 12,
+    title: "[신작 안내] 가을 신작 안내",
+    date: "2025.10.01",
+    thumb: "/assets/news/hijiri.png",
+    views: 267,
+    likes: 38,
+  },
+]);
+
+// 페이지네이션
+const currentPage = ref(1);
+const itemsPerPage = 10;
+
+const totalPages = computed(() => Math.ceil(newsItems.value.length / itemsPerPage));
+
+const paginatedItems = computed(() => {
+  const start = (currentPage.value - 1) * itemsPerPage;
+  const end = start + itemsPerPage;
+  return newsItems.value.slice(start, end);
+});
+
+const goToPage = (page: number) => {
+  if (page >= 1 && page <= totalPages.value) {
+    currentPage.value = page;
+  }
+};
+
+// 페이지 번호 배열 생성 (최대 5개 표시)
+const pageNumbers = computed(() => {
+  const pages: number[] = [];
+  const maxVisible = 5;
+  let start = Math.max(1, currentPage.value - Math.floor(maxVisible / 2));
+  const end = Math.min(totalPages.value, start + maxVisible - 1);
+
+  if (end - start + 1 < maxVisible) {
+    start = Math.max(1, end - maxVisible + 1);
+  }
+
+  for (let i = start; i <= end; i++) {
+    pages.push(i);
+  }
+  return pages;
+});
+</script>
 
 <template>
   <div class="master-news-view">
-    <h1>소식</h1>
-    <p>News 페이지입니다.</p>
+    <header class="page-header">
+      <h1>소식</h1>
+      <p class="description">동방 프로젝트 서클 공리와정리의 공지사항 및 소식을 전해드립니다.</p>
+    </header>
+
+    <div class="news-table-wrapper">
+      <table class="news-table">
+        <thead>
+          <tr>
+            <th class="col-no">번호</th>
+            <th class="col-thumb"></th>
+            <th class="col-title">제목</th>
+            <th class="col-views">조회수</th>
+            <th class="col-likes">좋아요</th>
+            <th class="col-date">작성일</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="item in paginatedItems" :key="item.id" class="news-row">
+            <td class="col-no">{{ item.id }}</td>
+            <td class="col-thumb">
+              <div class="thumb-wrapper">
+                <img :src="item.thumb" :alt="item.title" class="thumb" />
+              </div>
+            </td>
+            <td class="col-title">
+              <a href="#" class="title-link">{{ item.title }}</a>
+            </td>
+            <td class="col-views">{{ item.views }}</td>
+            <td class="col-likes">{{ item.likes }}</td>
+            <td class="col-date">{{ item.date }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination -->
+    <nav class="pagination" v-if="totalPages > 1">
+      <button class="page-btn" :disabled="currentPage === 1" @click="goToPage(1)">&laquo;</button>
+      <button class="page-btn" :disabled="currentPage === 1" @click="goToPage(currentPage - 1)">
+        &lsaquo;
+      </button>
+      <button
+        v-for="page in pageNumbers"
+        :key="page"
+        class="page-btn"
+        :class="{ active: page === currentPage }"
+        @click="goToPage(page)"
+      >
+        {{ page }}
+      </button>
+      <button
+        class="page-btn"
+        :disabled="currentPage === totalPages"
+        @click="goToPage(currentPage + 1)"
+      >
+        &rsaquo;
+      </button>
+      <button class="page-btn" :disabled="currentPage === totalPages" @click="goToPage(totalPages)">
+        &raquo;
+      </button>
+    </nav>
   </div>
 </template>
 
-<style scoped></style>
+<style scoped>
+.master-news-view {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xl);
+}
+
+.page-header h1 {
+  margin: 0 0 var(--spacing-sm);
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+}
+
+.page-header .description {
+  margin: 0;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+/* Table */
+.news-table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.news-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--font-size-sm);
+}
+
+.news-table th,
+.news-table td {
+  padding: var(--spacing-md);
+  line-height: 1;
+  /* text-align: left; */
+  border-bottom: 1px solid var(--color-border);
+}
+
+.news-table th {
+  line-height: 0;
+}
+
+.news-table thead th {
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+  /* border-top: 1px solid var(--color-text-primary); */
+  border-bottom: 1px solid var(--color-text-primary);
+}
+
+.news-table tbody tr {
+  transition: background 0.2s ease;
+}
+
+.news-table tbody tr:hover {
+  background: var(--color-bg-overlay);
+  backdrop-filter: var(--blur-sm);
+}
+
+.col-no {
+  width: 3.5rem;
+  text-align: center;
+  color: var(--color-text-secondary);
+  padding-left: var(--spacing-xs);
+  padding-right: var(--spacing-xs);
+  white-space: nowrap;
+}
+
+.col-title {
+  text-align: left;
+}
+
+.news-table .col-thumb {
+  padding: var(--spacing-xs);
+  width: 4.5rem;
+}
+
+.thumb-wrapper {
+  width: 3.5rem;
+  height: 2.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-bg-subtle);
+  border-radius: var(--radius-xs);
+  overflow: hidden;
+}
+
+.thumb {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: cover;
+}
+
+.col-title {
+  min-width: 12rem;
+}
+
+.col-views,
+.col-likes {
+  width: 4rem;
+  text-align: center;
+  color: var(--color-text-secondary);
+  padding-left: var(--spacing-xs);
+  padding-right: var(--spacing-xs);
+  white-space: nowrap;
+}
+
+.col-date {
+  width: 6rem;
+  text-align: center;
+  color: var(--color-text-secondary);
+  padding-left: var(--spacing-xs);
+  padding-right: var(--spacing-xs);
+  white-space: nowrap;
+}
+
+.title-link {
+  color: var(--color-text-primary);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.title-link:hover {
+  color: var(--color-text-secondary);
+  text-decoration: underline;
+}
+
+/* Pagination */
+.pagination {
+  display: flex;
+  justify-content: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-lg) 0;
+}
+
+.page-btn {
+  min-width: 2rem;
+  height: 2rem;
+  padding: 0 var(--spacing-sm);
+  border: 1px solid var(--color-border);
+  background: var(--color-bg-primary);
+  color: var(--color-text-primary);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.page-btn:hover:not(:disabled) {
+  background: var(--color-bg-subtle);
+}
+
+.page-btn:disabled {
+  color: var(--color-text-muted);
+  cursor: not-allowed;
+}
+
+.page-btn.active {
+  background: var(--color-text-primary);
+  color: var(--color-text-inverse);
+  border-color: var(--color-text-primary);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .col-no,
+  .col-views,
+  .col-likes {
+    display: none;
+  }
+
+  .news-table th.col-no,
+  .news-table td.col-no,
+  .news-table th.col-views,
+  .news-table td.col-views,
+  .news-table th.col-likes,
+  .news-table td.col-likes {
+    display: none;
+  }
+
+  .col-date {
+    width: 5rem;
+    font-size: var(--font-size-xs);
+  }
+}
+
+@media (max-width: 480px) {
+  .col-thumb {
+    display: none;
+  }
+
+  .news-table th.col-thumb,
+  .news-table td.col-thumb {
+    display: none;
+  }
+}
+</style>

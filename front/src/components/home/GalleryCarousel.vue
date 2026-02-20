@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from "vue";
-import { Carousel, Slide, Navigation } from "vue3-carousel";
+import { Carousel, Slide } from "vue3-carousel";
 import "vue3-carousel/carousel.css";
 
 const currentSlide = ref(0);
@@ -35,10 +35,6 @@ const thumbnailsConfig = {
       <Slide v-for="(item, i) in galleryList" :key="i">
         <img class="gallery-image" :src="gallerySrcRoot + item.src" />
       </Slide>
-
-      <template #addons>
-        <Navigation />
-      </template>
     </Carousel>
 
     <Carousel class="thumbnails" v-bind="thumbnailsConfig" v-model="currentSlide">
@@ -55,8 +51,8 @@ const thumbnailsConfig = {
 
 <style scoped>
 .gallery {
-  --vc-nav-background: rgba(255, 255, 255, 0.7);
-  --vc-nav-border-radius: 100%;
+  /* --vc-nav-background: rgba(255, 255, 255, 0.7); */
+  /* --vc-nav-border-radius: 100%; */
   height: 400px;
 }
 
@@ -65,9 +61,7 @@ const thumbnailsConfig = {
   height: 100%;
   object-fit: contain;
   border-radius: var(--radius-sm);
-  background-color: var(--color-bg-muted, rgba(0, 0, 0, 0.05));
-  border: 1px solid var(--color-border, rgba(0, 0, 0, 0.1));
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  filter: var(--shadow-sm);
 }
 
 .thumbnails {
@@ -83,7 +77,6 @@ const thumbnailsConfig = {
   background-color: var(--color-bg-muted, rgba(0, 0, 0, 0.05));
   border: 1px solid var(--color-border, rgba(0, 0, 0, 0.1));
   border-radius: var(--radius-xs, 4px);
-  overflow: hidden;
 }
 
 .thumbnail.is-active,

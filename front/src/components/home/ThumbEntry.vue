@@ -19,7 +19,7 @@
   gap: var(--spacing-sm);
 }
 .thumb-wrapper {
-  aspect-ratio: 3 / 4;
+  aspect-ratio: 1;
   width: 100%;
   display: flex;
   align-items: center;
