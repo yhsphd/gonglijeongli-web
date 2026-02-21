@@ -1,8 +1,14 @@
 <script setup lang="ts">
-import { ref, computed } from "vue";
+import { ref, computed, onMounted } from "vue";
+import { useRouter } from "vue-router";
 
-// 임시 데이터 (추후 백엔드 API로 교체)
-const newsItems = ref([
+const router = useRouter();
+
+// 관리자 상태 (추후 인증 시스템/store로 교체)
+const isAdmin = ref(true); // 테스트용 true, 실제로는 false
+
+// 기본 데이터 (백엔드 없을 때 사용)
+const defaultPosts = [
   {
     id: 1,
     title: "[행사 공지] 미래세기로의 초대장 부스 안내",
@@ -99,7 +105,31 @@ const newsItems = ref([
     views: 267,
     likes: 38,
   },
-]);
+];
+
+// 뉴스 아이템 (localStorage + 기본 데이터 병합)
+const newsItems = ref<
+  Array<{
+    id: number;
+    title: string;
+    date: string;
+    thumb?: string;
+    thumbnail?: string;
+    views: number;
+    likes: number;
+  }>
+>([]);
+
+// 데이터 로드
+const loadPosts = () => {
+  const savedPosts = JSON.parse(localStorage.getItem("news_posts") || "[]");
+  // localStorage 데이터를 먼저, 그 다음 기본 데이터
+  newsItems.value = [...savedPosts, ...defaultPosts];
+};
+
+onMounted(() => {
+  loadPosts();
+});
 
 // 페이지네이션
 const currentPage = ref(1);
@@ -135,6 +165,23 @@ const pageNumbers = computed(() => {
   }
   return pages;
 });
+
+// 관리자 기능
+const handleWrite = () => {
+  router.push({ name: "news-write" });
+};
+
+const handleDelete = (id: number) => {
+  if (confirm("정말 삭제하시겠습니까?")) {
+    // localStorage에서도 삭제
+    const savedPosts = JSON.parse(localStorage.getItem("news_posts") || "[]");
+    const filteredSaved = savedPosts.filter((item: { id: number }) => item.id !== id);
+    localStorage.setItem("news_posts", JSON.stringify(filteredSaved));
+
+    // 화면에서도 삭제
+    newsItems.value = newsItems.value.filter((item) => item.id !== id);
+  }
+};
 </script>
 
 <template>
@@ -154,6 +201,7 @@ const pageNumbers = computed(() => {
             <th class="col-views">조회수</th>
             <th class="col-likes">좋아요</th>
             <th class="col-date">작성일</th>
+            <th class="col-admin" v-if="isAdmin">관리</th>
           </tr>
         </thead>
         <tbody>
@@ -161,45 +209,60 @@ const pageNumbers = computed(() => {
             <td class="col-no">{{ item.id }}</td>
             <td class="col-thumb">
               <div class="thumb-wrapper">
-                <img :src="item.thumb" :alt="item.title" class="thumb" />
+                <img :src="item.thumb || item.thumbnail" :alt="item.title" class="thumb" />
               </div>
             </td>
             <td class="col-title">
-              <a href="#" class="title-link">{{ item.title }}</a>
+              <RouterLink :to="{ name: 'news-detail', params: { id: item.id } }" class="title-link">
+                {{ item.title }}
+              </RouterLink>
             </td>
             <td class="col-views">{{ item.views }}</td>
             <td class="col-likes">{{ item.likes }}</td>
             <td class="col-date">{{ item.date }}</td>
+            <td class="col-admin" v-if="isAdmin">
+              <button class="btn-delete" @click="handleDelete(item.id)">삭제</button>
+            </td>
           </tr>
         </tbody>
       </table>
     </div>
 
     <!-- Pagination -->
-    <nav class="pagination" v-if="totalPages > 1">
-      <button class="page-btn" :disabled="currentPage === 1" @click="goToPage(1)">&laquo;</button>
-      <button class="page-btn" :disabled="currentPage === 1" @click="goToPage(currentPage - 1)">
-        &lsaquo;
-      </button>
-      <button
-        v-for="page in pageNumbers"
-        :key="page"
-        class="page-btn"
-        :class="{ active: page === currentPage }"
-        @click="goToPage(page)"
-      >
-        {{ page }}
-      </button>
-      <button
-        class="page-btn"
-        :disabled="currentPage === totalPages"
-        @click="goToPage(currentPage + 1)"
-      >
-        &rsaquo;
-      </button>
-      <button class="page-btn" :disabled="currentPage === totalPages" @click="goToPage(totalPages)">
-        &raquo;
-      </button>
+    <nav class="pagination-wrapper">
+      <div class="pagination-left"></div>
+      <div class="pagination" v-if="totalPages > 1">
+        <button class="page-btn" :disabled="currentPage === 1" @click="goToPage(1)">&laquo;</button>
+        <button class="page-btn" :disabled="currentPage === 1" @click="goToPage(currentPage - 1)">
+          &lsaquo;
+        </button>
+        <button
+          v-for="page in pageNumbers"
+          :key="page"
+          class="page-btn"
+          :class="{ active: page === currentPage }"
+          @click="goToPage(page)"
+        >
+          {{ page }}
+        </button>
+        <button
+          class="page-btn"
+          :disabled="currentPage === totalPages"
+          @click="goToPage(currentPage + 1)"
+        >
+          &rsaquo;
+        </button>
+        <button
+          class="page-btn"
+          :disabled="currentPage === totalPages"
+          @click="goToPage(totalPages)"
+        >
+          &raquo;
+        </button>
+      </div>
+      <div class="pagination-right">
+        <button v-if="isAdmin" class="btn-write" @click="handleWrite">글쓰기</button>
+      </div>
     </nav>
   </div>
 </template>
@@ -222,6 +285,23 @@ const pageNumbers = computed(() => {
   margin: 0;
   font-size: var(--font-size-sm);
   color: var(--color-text-secondary);
+}
+
+/* Admin Toolbar */
+.btn-write {
+  padding: var(--spacing-sm) var(--spacing-md);
+  border: 1px solid var(--color-text-primary);
+  background: var(--color-text-primary);
+  color: var(--color-text-inverse);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-write:hover {
+  background: var(--color-bg-primary);
+  color: var(--color-text-primary);
 }
 
 /* Table */
@@ -322,6 +402,31 @@ const pageNumbers = computed(() => {
   white-space: nowrap;
 }
 
+.col-admin {
+  width: 4rem;
+  text-align: center;
+  padding-left: var(--spacing-xs);
+  padding-right: var(--spacing-xs);
+}
+
+.btn-delete {
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border: 1px solid var(--color-border);
+  background: var(--color-bg-primary);
+  color: var(--color-text-secondary);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-xs);
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-delete:hover {
+  border-color: var(--color-danger);
+  background: var(--color-danger);
+  color: var(--color-text-inverse);
+}
+
 .title-link {
   color: var(--color-text-primary);
   text-decoration: none;
@@ -334,11 +439,30 @@ const pageNumbers = computed(() => {
 }
 
 /* Pagination */
-.pagination {
+.pagination-wrapper {
   display: flex;
   justify-content: center;
-  gap: var(--spacing-xs);
+  align-items: center;
   padding: var(--spacing-lg) 0;
+}
+
+.pagination-left,
+.pagination-right {
+  flex: 1;
+  display: flex;
+}
+
+.pagination-left {
+  justify-content: flex-start;
+}
+
+.pagination-right {
+  justify-content: flex-end;
+}
+
+.pagination {
+  display: flex;
+  gap: var(--spacing-xs);
 }
 
 .page-btn {

@@ -20,6 +20,8 @@ declare module 'vue' {
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     ThumbEntry: typeof import('./src/components/home/ThumbEntry.vue')['default']
+    TiptapEditor: typeof import('./src/components/common/TiptapEditor.vue')['default']
+    TiptapRenderer: typeof import('./src/components/common/TiptapRenderer.vue')['default']
     TwitterTimeline: typeof import('./src/components/home/TwitterTimeline.vue')['default']
   }
 }
