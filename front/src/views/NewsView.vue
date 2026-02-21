@@ -171,6 +171,10 @@ const handleWrite = () => {
   router.push({ name: "news-write" });
 };
 
+const handleEdit = (id: number) => {
+  router.push({ name: "news-write", query: { edit: id } });
+};
+
 const handleDelete = (id: number) => {
   if (confirm("정말 삭제하시겠습니까?")) {
     // localStorage에서도 삭제
@@ -221,7 +225,14 @@ const handleDelete = (id: number) => {
             <td class="col-likes">{{ item.likes }}</td>
             <td class="col-date">{{ item.date }}</td>
             <td class="col-admin" v-if="isAdmin">
-              <button class="btn-delete" @click="handleDelete(item.id)">삭제</button>
+              <div class="admin-actions">
+                <button class="btn-action btn-edit" @click="handleEdit(item.id)" title="수정">
+                  <FontAwesomeIcon icon="pen" />
+                </button>
+                <button class="btn-action btn-delete" @click="handleDelete(item.id)" title="삭제">
+                  <FontAwesomeIcon icon="trash" />
+                </button>
+              </div>
             </td>
           </tr>
         </tbody>
@@ -331,7 +342,6 @@ const handleDelete = (id: number) => {
 .news-table thead th {
   font-weight: var(--font-weight-bold);
   color: var(--color-text-primary);
-  /* border-top: 1px solid var(--color-text-primary); */
   border-bottom: 1px solid var(--color-text-primary);
 }
 
@@ -340,8 +350,7 @@ const handleDelete = (id: number) => {
 }
 
 .news-table tbody tr:hover {
-  background: var(--color-bg-overlay);
-  backdrop-filter: var(--blur-sm);
+  background: var(--color-bg-subtle);
 }
 
 .col-no {
@@ -403,25 +412,40 @@ const handleDelete = (id: number) => {
 }
 
 .col-admin {
-  width: 4rem;
+  width: 5rem;
   text-align: center;
   padding-left: var(--spacing-xs);
   padding-right: var(--spacing-xs);
 }
 
-.btn-delete {
-  padding: var(--spacing-xs) var(--spacing-sm);
+.admin-actions {
+  display: flex;
+  justify-content: center;
+  gap: var(--spacing-xs);
+}
+
+.btn-action {
+  width: 1.75rem;
+  height: 1.75rem;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   border: 1px solid var(--color-border);
   background: var(--color-bg-primary);
   color: var(--color-text-secondary);
-  font-family: var(--font-family-base);
   font-size: var(--font-size-xs);
-  white-space: nowrap;
   cursor: pointer;
   transition: all 0.2s;
 }
 
-.btn-delete:hover {
+.btn-action.btn-edit:hover {
+  border-color: #2563eb;
+  background: #2563eb;
+  color: var(--color-text-inverse);
+}
+
+.btn-action.btn-delete:hover {
   border-color: var(--color-danger);
   background: var(--color-danger);
   color: var(--color-text-inverse);
