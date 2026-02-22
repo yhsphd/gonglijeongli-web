@@ -26,12 +26,12 @@ const router = createRouter({
         {
           path: "news/write",
           name: "news-write",
-          component: () => import("@/views/NewsWriteView.vue"),
+          component: () => import("@/views/news/WriteView.vue"),
         },
         {
           path: "news/:id",
           name: "news-detail",
-          component: () => import("@/views/NewsDetailView.vue"),
+          component: () => import("@/views/news/DetailView.vue"),
         },
         {
           path: "events",

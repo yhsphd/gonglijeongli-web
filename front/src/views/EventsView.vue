@@ -1,5 +1,11 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from "vue";
+import PageHeader from "@/components/common/PageHeader.vue";
+import AppPagination from "@/components/common/AppPagination.vue";
+import AdminModal from "@/components/common/AdminModal.vue";
+import FormInput from "@/components/common/FormInput.vue";
+import CardActions from "@/components/common/CardActions.vue";
+import ContentCard from "@/components/common/ContentCard.vue";
 
 // 이벤트 타입 정의
 interface EventItem {
@@ -178,29 +184,6 @@ const paginatedItems = computed(() => {
   return eventItems.value.slice(start, end);
 });
 
-const goToPage = (page: number) => {
-  if (page >= 1 && page <= totalPages.value) {
-    currentPage.value = page;
-  }
-};
-
-// 페이지 번호 배열 생성 (최대 5개 표시)
-const pageNumbers = computed(() => {
-  const pages: number[] = [];
-  const maxVisible = 5;
-  let start = Math.max(1, currentPage.value - Math.floor(maxVisible / 2));
-  const end = Math.min(totalPages.value, start + maxVisible - 1);
-
-  if (end - start + 1 < maxVisible) {
-    start = Math.max(1, end - maxVisible + 1);
-  }
-
-  for (let i = start; i <= end; i++) {
-    pages.push(i);
-  }
-  return pages;
-});
-
 // 상태 라벨
 const getStatusLabel = (status: "upcoming" | "ongoing" | "ended") => {
   switch (status) {
@@ -306,157 +289,87 @@ const handleCardClick = (event: EventItem) => {
 
 <template>
   <div class="master-events-view">
-    <header class="page-header">
-      <h1>행사</h1>
-      <p class="description">동방 프로젝트 서클 공리와정리가 참가하는 행사 일정을 안내합니다.</p>
-    </header>
+    <PageHeader
+      title="행사"
+      description="동방 프로젝트 서클 공리와정리가 참가하는 행사 일정을 안내합니다."
+    />
 
     <div class="events-grid">
-      <article
+      <ContentCard
         v-for="event in paginatedItems"
         :key="event.id"
-        class="event-card"
-        :class="[`status-${event.status}`, { 'has-link': !!event.link }]"
+        :thumb="event.thumb || event.thumbnail"
+        :alt="event.title"
+        :has-link="!!event.link"
+        :class="`status-${event.status}`"
         @click="handleCardClick(event)"
       >
-        <div class="card-thumb">
-          <img :src="event.thumb || event.thumbnail" :alt="event.title" class="thumb-img" />
+        <template #overlay>
           <span class="status-badge" :class="event.status">{{ getStatusLabel(event.status) }}</span>
-          <div v-if="isAdmin" class="card-actions">
-            <button
-              class="btn-action-card btn-edit"
-              @click.stop="openEditModal(event)"
-              title="수정"
-            >
-              <FontAwesomeIcon icon="pen" />
-            </button>
-            <button
-              class="btn-action-card btn-delete"
-              @click.stop="handleDelete(event.id)"
-              title="삭제"
-            >
-              <FontAwesomeIcon icon="trash" />
-            </button>
-          </div>
-        </div>
-        <div class="card-content">
-          <h3 class="card-title">{{ event.title }}</h3>
-          <p class="card-date">{{ event.date }}</p>
-          <p class="card-location">{{ event.location }}</p>
-        </div>
-      </article>
+          <CardActions
+            v-if="isAdmin"
+            @edit="openEditModal(event)"
+            @delete="handleDelete(event.id)"
+          />
+        </template>
+        <h3 class="card-title">{{ event.title }}</h3>
+        <p class="card-date">{{ event.date }}</p>
+        <p class="card-location">{{ event.location }}</p>
+      </ContentCard>
     </div>
 
     <!-- Pagination -->
-    <nav class="pagination-wrapper">
-      <div class="pagination-left"></div>
-      <div class="pagination" v-if="totalPages > 1">
-        <button class="page-btn" :disabled="currentPage === 1" @click="goToPage(1)">&laquo;</button>
-        <button class="page-btn" :disabled="currentPage === 1" @click="goToPage(currentPage - 1)">
-          &lsaquo;
-        </button>
-        <button
-          v-for="page in pageNumbers"
-          :key="page"
-          class="page-btn"
-          :class="{ active: page === currentPage }"
-          @click="goToPage(page)"
-        >
-          {{ page }}
-        </button>
-        <button
-          class="page-btn"
-          :disabled="currentPage === totalPages"
-          @click="goToPage(currentPage + 1)"
-        >
-          &rsaquo;
-        </button>
-        <button
-          class="page-btn"
-          :disabled="currentPage === totalPages"
-          @click="goToPage(totalPages)"
-        >
-          &raquo;
-        </button>
-      </div>
-      <div class="pagination-right">
+    <AppPagination v-model:current-page="currentPage" :total-pages="totalPages">
+      <template #right>
         <button v-if="isAdmin" class="btn-write" @click="openAddModal">이벤트 추가</button>
-      </div>
-    </nav>
+      </template>
+    </AppPagination>
 
     <!-- 이벤트 추가/수정 모달 -->
-    <Teleport to="body">
-      <div v-if="showModal" class="modal-overlay" @click.self="closeModal">
-        <div class="modal-content">
-          <header class="modal-header">
-            <h2>{{ isEditMode ? "이벤트 수정" : "이벤트 추가" }}</h2>
-            <button class="btn-close" @click="closeModal"><FontAwesomeIcon icon="xmark" /></button>
-          </header>
-          <form class="modal-body" @submit.prevent="handleSave">
-            <div class="form-group">
-              <label for="title">행사명 *</label>
-              <input
-                id="title"
-                v-model="formData.title"
-                type="text"
-                placeholder="행사명을 입력하세요"
-                required
-              />
-            </div>
-            <div class="form-group">
-              <label for="date">날짜 *</label>
-              <input
-                id="date"
-                v-model="formData.date"
-                type="text"
-                placeholder="예: 2026.03.15 또는 2026.03.15 ~ 2026.03.16"
-                required
-              />
-            </div>
-            <div class="form-group">
-              <label for="location">장소 *</label>
-              <input
-                id="location"
-                v-model="formData.location"
-                type="text"
-                placeholder="행사 장소를 입력하세요"
-                required
-              />
-            </div>
-            <div class="form-group">
-              <label for="thumb">썸네일 URL</label>
-              <input
-                id="thumb"
-                v-model="formData.thumb"
-                type="text"
-                placeholder="/assets/events/example.png"
-              />
-            </div>
-            <div class="form-group">
-              <label for="link">연결 링크</label>
-              <input
-                id="link"
-                v-model="formData.link"
-                type="text"
-                placeholder="https://example.com/event"
-              />
-            </div>
-            <div class="form-group">
-              <label for="status">상태 *</label>
-              <select id="status" v-model="formData.status" required>
-                <option value="upcoming">예정</option>
-                <option value="ongoing">진행중</option>
-                <option value="ended">종료</option>
-              </select>
-            </div>
-            <div class="modal-actions">
-              <button type="button" class="btn-cancel" @click="closeModal">취소</button>
-              <button type="submit" class="btn-submit">{{ isEditMode ? "수정" : "추가" }}</button>
-            </div>
-          </form>
-        </div>
+    <AdminModal
+      :open="showModal"
+      :title="isEditMode ? '이벤트 수정' : '이벤트 추가'"
+      :submit-label="isEditMode ? '수정' : '추가'"
+      @close="closeModal"
+      @submit="handleSave"
+    >
+      <FormInput
+        v-model="formData.title"
+        label="행사명"
+        placeholder="행사명을 입력하세요"
+        required
+      />
+      <FormInput
+        v-model="formData.date"
+        label="날짜"
+        placeholder="예: 2026.03.15 또는 2026.03.15 ~ 2026.03.16"
+        required
+      />
+      <FormInput
+        v-model="formData.location"
+        label="장소"
+        placeholder="행사 장소를 입력하세요"
+        required
+      />
+      <FormInput
+        v-model="formData.thumb"
+        label="썸네일 URL"
+        placeholder="/assets/events/example.png"
+      />
+      <FormInput
+        v-model="formData.link"
+        label="연결 링크"
+        placeholder="https://example.com/event"
+      />
+      <div class="form-group">
+        <label for="status">상태 *</label>
+        <select id="status" v-model="formData.status" required>
+          <option value="upcoming">예정</option>
+          <option value="ongoing">진행중</option>
+          <option value="ended">종료</option>
+        </select>
       </div>
-    </Teleport>
+    </AdminModal>
   </div>
 </template>
 
@@ -467,72 +380,23 @@ const handleCardClick = (event: EventItem) => {
   gap: var(--spacing-xl);
 }
 
-.page-header h1 {
-  margin: 0 0 var(--spacing-sm);
-  font-size: var(--font-size-xl);
-  font-weight: var(--font-weight-bold);
-  color: var(--color-text-primary);
-}
-
-.page-header .description {
-  margin: 0;
-  font-size: var(--font-size-sm);
-  color: var(--color-text-secondary);
-}
-
 /* Events Grid */
 .events-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: var(--spacing-xl);
+  gap: var(--spacing-md);
 }
 
-/* Event Card */
-.event-card {
-  display: flex;
-  flex-direction: column;
-  background: var(--color-bg-primary);
-  border: 1px solid var(--color-border);
-  overflow: hidden;
-  transition: all 0.3s ease;
-}
-
-.event-card.has-link {
-  cursor: pointer;
-}
-
-.event-card:hover {
-  transform: translateY(-4px);
-  box-shadow: var(--shadow-md);
-}
-
-.event-card.status-ended {
+/* Event Card - status-ended styling via ContentCard */
+:deep(.content-card).status-ended {
   opacity: 0.7;
 }
 
-.event-card.status-ended:hover {
+:deep(.content-card).status-ended:hover {
   opacity: 1;
 }
 
-/* Card Thumbnail */
-.card-thumb {
-  position: relative;
-  aspect-ratio: 16 / 10;
-  overflow: hidden;
-  background: var(--color-bg-subtle);
-}
-
-.thumb-img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  transition: transform 0.3s ease;
-}
-
-.event-card:hover .thumb-img {
-  transform: scale(1.05);
-}
-
+/* Status Badge */
 .status-badge {
   position: absolute;
   top: var(--spacing-sm);
@@ -544,61 +408,15 @@ const handleCardClick = (event: EventItem) => {
 }
 
 .status-badge.upcoming {
-  background: #2563eb;
+  background: var(--color-info);
 }
 
 .status-badge.ongoing {
-  background: #16a34a;
+  background: var(--color-success);
 }
 
 .status-badge.ended {
   background: var(--color-text-muted);
-}
-
-.card-actions {
-  position: absolute;
-  top: var(--spacing-sm);
-  right: var(--spacing-sm);
-  display: flex;
-  gap: var(--spacing-xs);
-  opacity: 0;
-  transition: opacity 0.2s;
-}
-
-.event-card:hover .card-actions {
-  opacity: 1;
-}
-
-.btn-action-card {
-  width: 1.5rem;
-  height: 1.5rem;
-  padding: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: none;
-  background: rgba(0, 0, 0, 0.5);
-  color: var(--color-text-inverse);
-  font-size: var(--font-size-xs);
-  line-height: 1;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.btn-action-card.btn-edit:hover {
-  background: #2563eb;
-}
-
-.btn-action-card.btn-delete:hover {
-  background: var(--color-danger);
-}
-
-/* Card Content */
-.card-content {
-  padding: var(--spacing-md);
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-xs);
 }
 
 .card-title {
@@ -648,61 +466,6 @@ const handleCardClick = (event: EventItem) => {
   color: var(--color-text-primary);
 }
 
-/* Pagination */
-.pagination-wrapper {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: var(--spacing-lg) 0;
-}
-
-.pagination-left,
-.pagination-right {
-  flex: 1;
-  display: flex;
-}
-
-.pagination-left {
-  justify-content: flex-start;
-}
-
-.pagination-right {
-  justify-content: flex-end;
-}
-
-.pagination {
-  display: flex;
-  gap: var(--spacing-xs);
-}
-
-.page-btn {
-  min-width: 2rem;
-  height: 2rem;
-  padding: 0 var(--spacing-sm);
-  border: 1px solid var(--color-border);
-  background: var(--color-bg-primary);
-  color: var(--color-text-primary);
-  font-family: var(--font-family-base);
-  font-size: var(--font-size-sm);
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.page-btn:hover:not(:disabled) {
-  background: var(--color-bg-subtle);
-}
-
-.page-btn:disabled {
-  color: var(--color-text-muted);
-  cursor: not-allowed;
-}
-
-.page-btn.active {
-  background: var(--color-text-primary);
-  color: var(--color-text-inverse);
-  border-color: var(--color-text-primary);
-}
-
 /* Responsive */
 @media (max-width: 768px) {
   .events-grid {
@@ -718,66 +481,7 @@ const handleCardClick = (event: EventItem) => {
   }
 }
 
-/* Modal */
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 10000000;
-}
-
-.modal-content {
-  background: var(--color-bg-primary);
-  width: 100%;
-  max-width: 28rem;
-  max-height: 90vh;
-  overflow-y: auto;
-  border: 1px solid var(--color-border);
-}
-
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: var(--spacing-md);
-  border-bottom: 1px solid var(--color-border);
-}
-
-.modal-header h2 {
-  margin: 0;
-  font-size: var(--font-size-lg);
-  font-weight: var(--font-weight-bold);
-}
-
-.btn-close {
-  width: 2rem;
-  height: 2rem;
-  padding: 0;
-  border: none;
-  background: none;
-  font-size: var(--font-size-lg);
-  color: var(--color-text-secondary);
-  cursor: pointer;
-  transition: color 0.2s;
-}
-
-.btn-close:hover {
-  color: var(--color-text-primary);
-}
-
-.modal-body {
-  padding: var(--spacing-md);
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-md);
-}
-
+/* Form Group for select (not in FormInput component) */
 .form-group {
   display: flex;
   flex-direction: column;
@@ -790,7 +494,6 @@ const handleCardClick = (event: EventItem) => {
   color: var(--color-text-primary);
 }
 
-.form-group input,
 .form-group select {
   padding: var(--spacing-sm) var(--spacing-md);
   border: 1px solid var(--color-border);
@@ -800,47 +503,8 @@ const handleCardClick = (event: EventItem) => {
   color: var(--color-text-primary);
 }
 
-.form-group input:focus,
 .form-group select:focus {
   outline: none;
   border-color: var(--color-text-primary);
-}
-
-.modal-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: var(--spacing-sm);
-  padding-top: var(--spacing-md);
-  border-top: 1px solid var(--color-border);
-}
-
-.btn-cancel,
-.btn-submit {
-  padding: var(--spacing-sm) var(--spacing-lg);
-  border: 1px solid var(--color-border);
-  font-family: var(--font-family-base);
-  font-size: var(--font-size-sm);
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.btn-cancel {
-  background: var(--color-bg-primary);
-  color: var(--color-text-primary);
-}
-
-.btn-cancel:hover {
-  background: var(--color-bg-subtle);
-}
-
-.btn-submit {
-  background: var(--color-text-primary);
-  color: var(--color-text-inverse);
-  border-color: var(--color-text-primary);
-}
-
-.btn-submit:hover {
-  background: var(--color-bg-primary);
-  color: var(--color-text-primary);
 }
 </style>

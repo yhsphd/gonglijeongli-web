@@ -306,12 +306,12 @@ onMounted(() => {
 }
 
 .btn-like {
-  border-color: #ff6b6b;
-  color: #ff6b6b;
+  border-color: var(--color-like);
+  color: var(--color-like);
 }
 
 .btn-like:hover {
-  background: #ff6b6b;
+  background: var(--color-like);
   color: var(--color-text-inverse);
 }
 

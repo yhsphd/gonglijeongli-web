@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from "vue";
 import { useRouter } from "vue-router";
+import PageHeader from "@/components/common/PageHeader.vue";
+import AppPagination from "@/components/common/AppPagination.vue";
 
 const router = useRouter();
 
@@ -143,29 +145,6 @@ const paginatedItems = computed(() => {
   return newsItems.value.slice(start, end);
 });
 
-const goToPage = (page: number) => {
-  if (page >= 1 && page <= totalPages.value) {
-    currentPage.value = page;
-  }
-};
-
-// 페이지 번호 배열 생성 (최대 5개 표시)
-const pageNumbers = computed(() => {
-  const pages: number[] = [];
-  const maxVisible = 5;
-  let start = Math.max(1, currentPage.value - Math.floor(maxVisible / 2));
-  const end = Math.min(totalPages.value, start + maxVisible - 1);
-
-  if (end - start + 1 < maxVisible) {
-    start = Math.max(1, end - maxVisible + 1);
-  }
-
-  for (let i = start; i <= end; i++) {
-    pages.push(i);
-  }
-  return pages;
-});
-
 // 관리자 기능
 const handleWrite = () => {
   router.push({ name: "news-write" });
@@ -190,10 +169,10 @@ const handleDelete = (id: number) => {
 
 <template>
   <div class="master-news-view">
-    <header class="page-header">
-      <h1>소식</h1>
-      <p class="description">동방 프로젝트 서클 공리와정리의 공지사항 및 소식을 전해드립니다.</p>
-    </header>
+    <PageHeader
+      title="소식"
+      description="동방 프로젝트 서클 공리와정리의 공지사항 및 소식을 전해드립니다."
+    />
 
     <div class="news-table-wrapper">
       <table class="news-table">
@@ -240,41 +219,11 @@ const handleDelete = (id: number) => {
     </div>
 
     <!-- Pagination -->
-    <nav class="pagination-wrapper">
-      <div class="pagination-left"></div>
-      <div class="pagination" v-if="totalPages > 1">
-        <button class="page-btn" :disabled="currentPage === 1" @click="goToPage(1)">&laquo;</button>
-        <button class="page-btn" :disabled="currentPage === 1" @click="goToPage(currentPage - 1)">
-          &lsaquo;
-        </button>
-        <button
-          v-for="page in pageNumbers"
-          :key="page"
-          class="page-btn"
-          :class="{ active: page === currentPage }"
-          @click="goToPage(page)"
-        >
-          {{ page }}
-        </button>
-        <button
-          class="page-btn"
-          :disabled="currentPage === totalPages"
-          @click="goToPage(currentPage + 1)"
-        >
-          &rsaquo;
-        </button>
-        <button
-          class="page-btn"
-          :disabled="currentPage === totalPages"
-          @click="goToPage(totalPages)"
-        >
-          &raquo;
-        </button>
-      </div>
-      <div class="pagination-right">
+    <AppPagination v-model:current-page="currentPage" :total-pages="totalPages">
+      <template #right>
         <button v-if="isAdmin" class="btn-write" @click="handleWrite">글쓰기</button>
-      </div>
-    </nav>
+      </template>
+    </AppPagination>
   </div>
 </template>
 
@@ -283,19 +232,6 @@ const handleDelete = (id: number) => {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-xl);
-}
-
-.page-header h1 {
-  margin: 0 0 var(--spacing-sm);
-  font-size: var(--font-size-xl);
-  font-weight: var(--font-weight-bold);
-  color: var(--color-text-primary);
-}
-
-.page-header .description {
-  margin: 0;
-  font-size: var(--font-size-sm);
-  color: var(--color-text-secondary);
 }
 
 /* Admin Toolbar */
@@ -440,8 +376,8 @@ const handleDelete = (id: number) => {
 }
 
 .btn-action.btn-edit:hover {
-  border-color: #2563eb;
-  background: #2563eb;
+  border-color: var(--color-info);
+  background: var(--color-info);
   color: var(--color-text-inverse);
 }
 
@@ -460,61 +396,6 @@ const handleDelete = (id: number) => {
 .title-link:hover {
   color: var(--color-text-secondary);
   text-decoration: underline;
-}
-
-/* Pagination */
-.pagination-wrapper {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: var(--spacing-lg) 0;
-}
-
-.pagination-left,
-.pagination-right {
-  flex: 1;
-  display: flex;
-}
-
-.pagination-left {
-  justify-content: flex-start;
-}
-
-.pagination-right {
-  justify-content: flex-end;
-}
-
-.pagination {
-  display: flex;
-  gap: var(--spacing-xs);
-}
-
-.page-btn {
-  min-width: 2rem;
-  height: 2rem;
-  padding: 0 var(--spacing-sm);
-  border: 1px solid var(--color-border);
-  background: var(--color-bg-primary);
-  color: var(--color-text-primary);
-  font-family: var(--font-family-base);
-  font-size: var(--font-size-sm);
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.page-btn:hover:not(:disabled) {
-  background: var(--color-bg-subtle);
-}
-
-.page-btn:disabled {
-  color: var(--color-text-muted);
-  cursor: not-allowed;
-}
-
-.page-btn.active {
-  background: var(--color-text-primary);
-  color: var(--color-text-inverse);
-  border-color: var(--color-text-primary);
 }
 
 /* Responsive */

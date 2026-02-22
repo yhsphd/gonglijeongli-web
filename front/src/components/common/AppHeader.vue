@@ -19,8 +19,9 @@ const menus = [
       </RouterLink>
       <div class="flex-grow"></div>
       <RouterLink class="nav" v-for="(menu, i) in menus" :key="i" :to="menu.to">
-        <p>{{ menu.label[0] }}</p>
-        <p>{{ menu.label[1] }}</p>
+        <span class="nav-label">{{ menu.label[0] }}</span>
+        <span class="nav-indicator"></span>
+        <span class="nav-label-en">{{ menu.label[1] }}</span>
       </RouterLink>
     </div>
   </div>
@@ -41,6 +42,7 @@ const menus = [
   border-color: var(--color-border);
   box-shadow: var(--shadow-md);
   backdrop-filter: var(--blur-sm);
+  z-index: var(--z-header);
 }
 .contents {
   width: var(--layout-content-width);
@@ -64,16 +66,70 @@ const menus = [
 
 .nav {
   width: var(--header-nav-width);
-  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
 
   font-style: normal;
   text-decoration: none;
   color: var(--color-text-primary);
+  transition: gap 0.2s ease;
+  opacity: 0.8;
 }
-.nav > p:nth-child(1) {
+
+.nav-label {
   font-size: var(--font-size-lg);
+  line-height: 1.2;
 }
-.nav > p:nth-child(2) {
+
+.nav-label-en {
   font-size: var(--font-size-xs);
+  line-height: 1.2;
+}
+
+/* Indicator - 45도 회전 정사각형 */
+.nav-indicator {
+  position: relative;
+  width: 6px;
+  height: 6px;
+  transform: rotate(45deg);
+  background: var(--color-text-primary);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+/* 가로선 (active 상태에서만 표시) */
+.nav-indicator::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 1px;
+  background: var(--color-text-primary);
+  transform: translate(-50%, -50%) rotate(-45deg);
+  transition: width 250ms ease-in-out;
+}
+
+/* Hover 효과 */
+.nav:hover {
+  gap: var(--spacing-xs);
+  opacity: 1;
+}
+
+/* Active 상태 (현재 페이지) */
+.nav.router-link-active {
+  opacity: 1;
+  gap: var(--spacing-xs);
+  font-weight: bold;
+}
+
+.nav:hover .nav-indicator,
+.nav.router-link-active .nav-indicator {
+  opacity: 1;
+}
+.nav.router-link-active .nav-indicator::after {
+  width: 5rem;
 }
 </style>

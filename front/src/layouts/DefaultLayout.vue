@@ -63,7 +63,7 @@ onUnmounted(() => {
 .header {
   position: fixed;
   top: var(--layout-header-top);
-  z-index: 999999;
+  z-index: var(--z-header);
 }
 
 .main {
@@ -89,13 +89,13 @@ onUnmounted(() => {
   width: 100%;
   height: 100%;
   background: var(--color-bg-overlay);
-  z-index: -1;
+  z-index: calc(var(--z-background) + 2);
 }
 .bg-image {
   position: fixed;
   left: 50%;
   transform: translateX(-50%);
-  z-index: -2;
+  z-index: calc(var(--z-background) + 1);
   box-shadow: 0 0 4px 2px rgba(0, 0, 0, 0.25);
 }
 .bg-image-sub {
@@ -104,7 +104,7 @@ onUnmounted(() => {
   top: 50%;
   transform: translate(-50%, -50%);
   width: 100vw;
-  z-index: -3;
+  z-index: var(--z-background);
   filter: var(--blur-md);
 }
 </style>

@@ -2,6 +2,8 @@
 import { ref, computed, onMounted, onUnmounted } from "vue";
 import { Carousel, Slide, Navigation } from "vue3-carousel";
 import "vue3-carousel/carousel.css";
+import PageHeader from "@/components/common/PageHeader.vue";
+import { faTwitter, faPixiv } from "@fortawesome/free-brands-svg-icons";
 
 // 갤러리 아이템 타입 정의
 interface GalleryItem {
@@ -19,19 +21,19 @@ const defaultGallery: GalleryItem[] = [
   { id: 1, src: "/assets/gallery/gal1.jpg", source: "twitter" },
   { id: 2, src: "/assets/gallery/gal2.jpg", source: "pixiv" },
   { id: 3, src: "/assets/gallery/gal3.jpg", source: "twitter" },
-  { id: 4, src: "/assets/gallery/gal4.jpg", source: "local" },
+  { id: 4, src: "/assets/gallery/gal4.jpg", source: "twitter" },
   { id: 5, src: "/assets/gallery/gal1.jpg", source: "pixiv" },
   { id: 6, src: "/assets/gallery/gal2.jpg", source: "twitter" },
-  { id: 7, src: "/assets/gallery/gal3.jpg", source: "local" },
+  { id: 7, src: "/assets/gallery/gal3.jpg", source: "pixiv" },
   { id: 8, src: "/assets/gallery/gal4.jpg", source: "pixiv" },
   { id: 9, src: "/assets/gallery/gal1.jpg", source: "twitter" },
-  { id: 10, src: "/assets/gallery/gal2.jpg", source: "local" },
+  { id: 10, src: "/assets/gallery/gal2.jpg", source: "twitter" },
   { id: 11, src: "/assets/gallery/gal3.jpg", source: "pixiv" },
   { id: 12, src: "/assets/gallery/gal4.jpg", source: "twitter" },
-  { id: 13, src: "/assets/gallery/gal1.jpg", source: "local" },
+  { id: 13, src: "/assets/gallery/gal1.jpg", source: "pixiv" },
   { id: 14, src: "/assets/gallery/gal2.jpg", source: "pixiv" },
   { id: 15, src: "/assets/gallery/gal3.jpg", source: "twitter" },
-  { id: 16, src: "/assets/gallery/gal4.jpg", source: "local" },
+  { id: 16, src: "/assets/gallery/gal4.jpg", source: "twitter" },
 ];
 
 // 갤러리 아이템
@@ -148,10 +150,7 @@ const openOriginal = (item: GalleryItem) => {
 
 <template>
   <div class="master-gallery-view">
-    <header class="page-header">
-      <h1>갤러리</h1>
-      <p class="description">트위터와 픽시브에 공개된 일러스트를 모아봅니다.</p>
-    </header>
+    <PageHeader title="갤러리" description="트위터와 픽시브에 공개된 일러스트를 모아봅니다." />
 
     <!-- Masonry Grid -->
     <div class="masonry-grid">
@@ -172,8 +171,8 @@ const openOriginal = (item: GalleryItem) => {
           </button>
         </div>
         <div class="source-badge" :class="item.source">
-          <FontAwesomeIcon v-if="item.source === 'twitter'" :icon="['fab', 'x-twitter']" />
-          <FontAwesomeIcon v-else-if="item.source === 'pixiv'" icon="palette" />
+          <FontAwesomeIcon v-if="item.source === 'twitter'" :icon="faTwitter" />
+          <FontAwesomeIcon v-else-if="item.source === 'pixiv'" :icon="faPixiv" />
           <FontAwesomeIcon v-else icon="image" />
         </div>
       </div>
@@ -241,19 +240,6 @@ const openOriginal = (item: GalleryItem) => {
   gap: var(--spacing-xl);
 }
 
-.page-header h1 {
-  margin: 0 0 var(--spacing-sm);
-  font-size: var(--font-size-xl);
-  font-weight: var(--font-weight-bold);
-  color: var(--color-text-primary);
-}
-
-.page-header .description {
-  margin: 0;
-  font-size: var(--font-size-sm);
-  color: var(--color-text-secondary);
-}
-
 /* Masonry Grid */
 .masonry-grid {
   columns: 4;
@@ -267,6 +253,12 @@ const openOriginal = (item: GalleryItem) => {
   cursor: pointer;
   overflow: hidden;
   background: var(--color-bg-subtle);
+  border: 1px solid var(--color-border);
+  transition: box-shadow 0.3s ease;
+}
+
+.masonry-item:hover {
+  box-shadow: var(--shadow-md);
 }
 
 .masonry-item img {
@@ -302,7 +294,7 @@ const openOriginal = (item: GalleryItem) => {
   align-items: center;
   justify-content: center;
   border: none;
-  background: rgba(0, 0, 0, 0.6);
+  background: var(--color-overlay-darker);
   color: var(--color-text-inverse);
   font-size: var(--font-size-xs);
   cursor: pointer;
@@ -324,7 +316,7 @@ const openOriginal = (item: GalleryItem) => {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(0, 0, 0, 0.6);
+  background: var(--color-overlay-darker);
   color: var(--color-text-inverse);
   font-size: var(--font-size-xs);
   border-radius: var(--radius-xs);
@@ -337,15 +329,15 @@ const openOriginal = (item: GalleryItem) => {
 }
 
 .source-badge.twitter {
-  background: rgba(0, 0, 0, 0.8);
+  background: var(--color-source-twitter);
 }
 
 .source-badge.pixiv {
-  background: rgba(0, 150, 250, 0.8);
+  background: var(--color-source-pixiv);
 }
 
 .source-badge.local {
-  background: rgba(100, 100, 100, 0.8);
+  background: var(--color-source-local);
 }
 
 /* Loading */
@@ -385,11 +377,11 @@ const openOriginal = (item: GalleryItem) => {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.95);
+  background: var(--color-overlay-darkest);
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 10000000;
+  z-index: var(--z-lightbox);
 }
 
 .lightbox-close {
