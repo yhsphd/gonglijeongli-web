@@ -1,6 +1,7 @@
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
+import fs from "fs";
 import swaggerUi from "swagger-ui-express";
 import YAML from "yamljs";
 import path from "path";
@@ -16,8 +17,18 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Swagger Setup
-const swaggerDocument = YAML.load(path.join(__dirname, "../swagger.yaml"));
-app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+try {
+  const swaggerFile = [
+    path.join(__dirname, "swagger.yaml"), // production (dist/)
+    path.join(__dirname, "..", "swagger.yaml"), // development (src/)
+  ].find((p) => fs.existsSync(p));
+
+  if (!swaggerFile) throw new Error("swagger.yaml을 찾을 수 없습니다.");
+  const swaggerDocument = YAML.load(swaggerFile);
+  app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+} catch (error) {
+  console.warn("Swagger UI를 로드할 수 없습니다:", (error as Error).message);
+}
 
 // Basic Route
 app.get("/", (req, res) => {

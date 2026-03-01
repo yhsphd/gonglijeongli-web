@@ -1,0 +1,13 @@
+{
+  "name": "gonglijeongli-web",
+  "private": true,
+  "scripts": {
+    "dev:front": "npm run dev --prefix front",
+    "dev:back": "npm run dev --prefix back",
+    "build": "npm run build --prefix front && npm run build --prefix back",
+    "lint": "npm run lint --prefix front && npm run lint --prefix back",
+    "format": "npm run format --prefix front && npm run format --prefix back",
+    "fix": "npm run fix --prefix front && npm run fix --prefix back",
+    "install:all": "npm ci --prefix front && npm ci --prefix back"
+  }
+}

@@ -11,9 +11,13 @@
     "build-only": "vite build",
     "type-check": "vue-tsc --build",
     "lint": "run-s lint:*",
-    "lint:oxlint": "oxlint . --fix",
-    "lint:eslint": "eslint . --fix --cache",
-    "format": "prettier --write --experimental-cli src/"
+    "lint:oxlint": "oxlint .",
+    "lint:eslint": "eslint . --cache",
+    "format": "prettier --check --experimental-cli src/",
+    "fix": "run-s fix:*",
+    "fix:oxlint": "oxlint . --fix",
+    "fix:eslint": "eslint . --fix --cache",
+    "fix:format": "prettier --write --experimental-cli src/"
   },
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^7.2.0",
