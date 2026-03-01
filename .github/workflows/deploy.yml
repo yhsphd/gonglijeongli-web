@@ -37,6 +37,8 @@ jobs:
             back/dist/
             back/package.json
             back/package-lock.json
+            back/prisma/
+            back/prisma.config.ts
           retention-days: 3
 
   # ──────────────────────────────────────────────
@@ -57,7 +59,7 @@ jobs:
           host: ${{ vars.OCI_HOST }}
           username: ${{ vars.OCI_USERNAME }}
           key: ${{ secrets.OCI_SSH_KEY }}
-          source: "front/dist/**,back/dist/**,back/package.json,back/package-lock.json"
+          source: "front/dist/**,back/dist/**,back/package.json,back/package-lock.json,back/prisma/**,back/prisma.config.ts"
           target: "/home/ubuntu/gonglijeongli-web"
           strip_components: 0
 

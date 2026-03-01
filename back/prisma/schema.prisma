@@ -12,7 +12,6 @@ generator client {
 
 datasource db {
   provider = "sqlite"
-  // Prisma 7.x: url은 prisma.config.ts에서 설정
 }
 
 // ─── 행사(Event) 모델 ───

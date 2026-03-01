@@ -13,14 +13,7 @@
  * upsert를 사용하여 같은 데이터가 중복 삽입되지 않습니다.
  */
 
-import path from "path";
-import { PrismaClient } from "../src/generated/prisma/client";
-import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
-
-// seed.ts는 prisma/ 폴더에 있으므로, dev.db는 한 단계 위 (back/) 에 있음
-const dbPath = path.resolve(__dirname, "..", "dev.db");
-const adapter = new PrismaBetterSqlite3({ url: `file:${dbPath}` });
-const prisma = new PrismaClient({ adapter });
+import { prisma } from "../src/prisma";
 
 // EventsView.vue에 있던 defaultEvents를 DB 시드 데이터로 이관
 const defaultEvents = [

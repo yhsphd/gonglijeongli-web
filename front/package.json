@@ -17,7 +17,9 @@
     "fix": "run-s fix:*",
     "fix:oxlint": "oxlint . --fix",
     "fix:eslint": "eslint . --fix --cache",
-    "fix:format": "prettier --write --experimental-cli src/"
+    "fix:format": "prettier --write --experimental-cli src/",
+    "clean": "rimraf dist",
+    "reset": "npm run clean"
   },
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^7.2.0",
@@ -61,6 +63,7 @@
     "npm-run-all2": "^8.0.4",
     "oxlint": "~1.42.0",
     "prettier": "3.8.1",
+    "rimraf": "^6.1.3",
     "typescript": "~5.9.3",
     "unplugin-auto-import": "^21.0.0",
     "unplugin-vue-components": "^31.0.0",

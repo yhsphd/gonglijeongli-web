@@ -22,13 +22,11 @@ declare module 'vue' {
     HeroCarousel: typeof import('./src/components/home/HeroCarousel.vue')['default']
     ListBox: typeof import('./src/components/home/ListBox.vue')['default']
     PageHeader: typeof import('./src/components/common/PageHeader.vue')['default']
-    Pagination: typeof import('./src/components/common/Pagination.vue')['default']
     PostEntry: typeof import('./src/components/home/PostEntry.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     ThumbEntry: typeof import('./src/components/home/ThumbEntry.vue')['default']
     TiptapEditor: typeof import('./src/components/common/TiptapEditor.vue')['default']
     TiptapRenderer: typeof import('./src/components/common/TiptapRenderer.vue')['default']
-    TwitterTimeline: typeof import('./src/components/home/TwitterTimeline.vue')['default']
   }
 }

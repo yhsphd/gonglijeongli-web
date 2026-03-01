@@ -8,6 +8,8 @@
     "lint": "npm run lint --prefix front && npm run lint --prefix back",
     "format": "npm run format --prefix front && npm run format --prefix back",
     "fix": "npm run fix --prefix front && npm run fix --prefix back",
-    "install:all": "npm ci --prefix front && npm ci --prefix back"
+    "install:all": "npm ci --prefix front && npm ci --prefix back",
+    "clean": "npm run clean --prefix front && npm run clean --prefix back",
+    "reset": "npm run reset --prefix front && npm run reset --prefix back"
   }
 }

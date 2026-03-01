@@ -17,6 +17,8 @@
  */
 
 import path from "path";
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore - 'npm run clean' 시 generated 폴더가 삭제되어 생기는 잠재적 타입 에러 무시
 import { PrismaClient } from "./generated/prisma/client";
 import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
 
