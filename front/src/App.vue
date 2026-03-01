@@ -1,4 +1,14 @@
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import { onMounted } from "vue";
+import { useAuthStore } from "@/stores/auth";
+
+const authStore = useAuthStore();
+
+// 앱 시작 시 세션 상태 확인
+onMounted(() => {
+  authStore.checkAuth();
+});
+</script>
 
 <template>
   <RouterView />

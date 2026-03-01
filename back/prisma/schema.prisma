@@ -1,0 +1,32 @@
+// Prisma Schema - Gonglijeongli Web
+// Docs: https://pris.ly/d/prisma-schema
+//
+// 이 파일은 DB 테이블 구조를 정의합니다.
+// 수정 후 `npx prisma migrate dev --name <설명>` 으로 마이그레이션 생성.
+// Prisma Client는 `npx prisma generate` 로 재생성됩니다.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+  // Prisma 7.x: url은 prisma.config.ts에서 설정
+}
+
+// ─── 행사(Event) 모델 ───
+// swagger.yaml의 EventItem 스키마와 1:1 대응
+model Event {
+  id        Int      @id @default(autoincrement()) // 자동 증가 PK
+  title     String                                  // 행사명
+  date      String                                  // "2026.03.15" 또는 "2026.03.15 ~ 2026.03.16"
+  location  String                                  // 행사 장소
+  thumb     String?                                 // 썸네일 이미지 경로 (선택)
+  link      String?                                 // 외부 링크 (선택)
+  status    String   @default("upcoming")           // "upcoming" | "ongoing" | "ended"
+  createdAt DateTime @default(now())                // 생성 시각
+  updatedAt DateTime @updatedAt                     // 수정 시각
+
+  @@map("events") // 실제 DB 테이블 이름을 "events"로 지정
+}

@@ -1,137 +1,28 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, watch } from "vue";
 import PageHeader from "@/components/common/PageHeader.vue";
 import AppPagination from "@/components/common/AppPagination.vue";
 import AdminModal from "@/components/common/AdminModal.vue";
 import FormInput from "@/components/common/FormInput.vue";
 import CardActions from "@/components/common/CardActions.vue";
 import ContentCard from "@/components/common/ContentCard.vue";
+import { useAuthStore } from "@/stores/auth";
+import {
+  fetchEvents,
+  createEvent,
+  updateEvent,
+  deleteEvent,
+  type EventItem,
+  type EventFormData,
+} from "@/api/events";
 
-// 이벤트 타입 정의
-interface EventItem {
-  id: number;
-  title: string;
-  date: string;
-  location: string;
-  thumb?: string;
-  thumbnail?: string;
-  link?: string;
-  status: "upcoming" | "ongoing" | "ended";
-}
+// 인증 스토어
+const authStore = useAuthStore();
 
-// 관리자 상태 (추후 인증 시스템/store로 교체)
-const isAdmin = ref(true); // 테스트용 true, 실제로는 false
-
-// 기본 데이터 (백엔드 없을 때 사용)
-const defaultEvents = [
-  {
-    id: 1,
-    title: "미래세기로의 초대장",
-    date: "2026.03.15",
-    location: "킨텍스 제1전시장",
-    thumb: "/assets/events/illustar10.png",
-    status: "upcoming" as const,
-  },
-  {
-    id: 2,
-    title: "코믹마켓 C106",
-    date: "2026.08.13 ~ 2026.08.14",
-    location: "도쿄 빅사이트",
-    thumb: "/assets/events/illustar10.png",
-    status: "upcoming" as const,
-  },
-  {
-    id: 3,
-    title: "코믹월드 서울 2026",
-    date: "2026.02.22 ~ 2026.02.23",
-    location: "aT센터",
-    thumb: "/assets/events/illustar10.png",
-    status: "ongoing" as const,
-  },
-  {
-    id: 4,
-    title: "동방 온리전 '환상경계'",
-    date: "2026.01.19",
-    location: "서울무역전시컨벤션센터(SETEC)",
-    thumb: "/assets/events/illustar10.png",
-    status: "ended" as const,
-  },
-  {
-    id: 5,
-    title: "코믹마켓 C105",
-    date: "2025.12.29 ~ 2025.12.30",
-    location: "도쿄 빅사이트",
-    thumb: "/assets/events/illustar10.png",
-    status: "ended" as const,
-  },
-  {
-    id: 6,
-    title: "일러스타 10",
-    date: "2025.11.23",
-    location: "코엑스 D홀",
-    thumb: "/assets/events/illustar10.png",
-    status: "ended" as const,
-  },
-  {
-    id: 7,
-    title: "코믹월드 서울 2025 가을",
-    date: "2025.10.18 ~ 2025.10.19",
-    location: "aT센터",
-    thumb: "/assets/events/illustar10.png",
-    status: "ended" as const,
-  },
-  {
-    id: 8,
-    title: "동방 온리전 '추억의 향연'",
-    date: "2025.09.14",
-    location: "서울무역전시컨벤션센터(SETEC)",
-    thumb: "/assets/events/illustar10.png",
-    status: "ended" as const,
-  },
-  {
-    id: 9,
-    title: "코믹마켓 C104",
-    date: "2025.08.11 ~ 2025.08.12",
-    location: "도쿄 빅사이트",
-    thumb: "/assets/events/illustar10.png",
-    status: "ended" as const,
-  },
-  {
-    id: 9,
-    title: "코믹마켓 C104",
-    date: "2025.08.11 ~ 2025.08.12",
-    location: "도쿄 빅사이트",
-    thumb: "/assets/events/illustar10.png",
-    status: "ended" as const,
-  },
-  {
-    id: 9,
-    title: "코믹마켓 C104",
-    date: "2025.08.11 ~ 2025.08.12",
-    location: "도쿄 빅사이트",
-    thumb: "/assets/events/illustar10.png",
-    status: "ended" as const,
-  },
-  {
-    id: 9,
-    title: "코믹마켓 C104",
-    date: "2025.08.11 ~ 2025.08.12",
-    location: "도쿄 빅사이트",
-    thumb: "/assets/events/illustar10.png",
-    status: "ended" as const,
-  },
-  {
-    id: 9,
-    title: "코믹마켓 C104",
-    date: "2025.08.11 ~ 2025.08.12",
-    location: "도쿄 빅사이트",
-    thumb: "/assets/events/illustar10.png",
-    status: "ended" as const,
-  },
-];
-
-// 행사 아이템 (localStorage + 기본 데이터 병합)
+// 행사 목록 상태
 const eventItems = ref<EventItem[]>([]);
+const totalItems = ref(0);
+const isLoading = ref(false);
 
 // 모달 관련 상태
 const showModal = ref(false);
@@ -139,13 +30,13 @@ const isEditMode = ref(false);
 const editingEventId = ref<number | null>(null);
 
 // 폼 데이터
-const formData = ref({
+const formData = ref<EventFormData>({
   title: "",
   date: "",
   location: "",
   thumb: "",
   link: "",
-  status: "upcoming" as "upcoming" | "ongoing" | "ended",
+  status: "upcoming",
 });
 
 const resetForm = () => {
@@ -161,27 +52,33 @@ const resetForm = () => {
   editingEventId.value = null;
 };
 
-// 데이터 로드
-const loadEvents = () => {
-  const savedEvents = JSON.parse(localStorage.getItem("event_posts") || "[]");
-  // localStorage 데이터를 먼저, 그 다음 기본 데이터
-  eventItems.value = [...savedEvents, ...defaultEvents];
+// 페이지네이션
+const currentPage = ref(1);
+const itemsPerPage = 9;
+
+const totalPages = computed(() => Math.ceil(totalItems.value / itemsPerPage));
+
+// 데이터 로드 (API 호출)
+const loadEvents = async () => {
+  isLoading.value = true;
+  try {
+    const data = await fetchEvents(currentPage.value, itemsPerPage);
+    eventItems.value = data.items;
+    totalItems.value = data.total;
+  } catch (error) {
+    console.error("행사 목록 로드 실패:", error);
+  } finally {
+    isLoading.value = false;
+  }
 };
 
 onMounted(() => {
   loadEvents();
 });
 
-// 페이지네이션
-const currentPage = ref(1);
-const itemsPerPage = 9;
-
-const totalPages = computed(() => Math.ceil(eventItems.value.length / itemsPerPage));
-
-const paginatedItems = computed(() => {
-  const start = (currentPage.value - 1) * itemsPerPage;
-  const end = start + itemsPerPage;
-  return eventItems.value.slice(start, end);
+// 페이지 변경 시 다시 로드
+watch(currentPage, () => {
+  loadEvents();
 });
 
 // 상태 라벨
@@ -209,7 +106,7 @@ const openEditModal = (event: EventItem) => {
     title: event.title,
     date: event.date,
     location: event.location,
-    thumb: event.thumb || event.thumbnail || "",
+    thumb: event.thumb || "",
     link: event.link || "",
     status: event.status,
   };
@@ -221,61 +118,31 @@ const closeModal = () => {
   resetForm();
 };
 
-// 이벤트 저장 (추가/수정)
-const handleSave = () => {
-  const savedEvents = JSON.parse(localStorage.getItem("event_posts") || "[]");
-
-  if (isEditMode.value && editingEventId.value !== null) {
-    // 수정 모드
-    const index = eventItems.value.findIndex((item) => item.id === editingEventId.value);
-    if (index !== -1) {
-      eventItems.value[index] = {
-        id: editingEventId.value,
-        title: formData.value.title,
-        date: formData.value.date,
-        location: formData.value.location,
-        thumb: formData.value.thumb,
-        link: formData.value.link,
-        status: formData.value.status,
-      };
-      // localStorage 업데이트
-      const savedIndex = savedEvents.findIndex(
-        (item: EventItem) => item.id === editingEventId.value
-      );
-      if (savedIndex !== -1) {
-        savedEvents[savedIndex] = eventItems.value[index];
-        localStorage.setItem("event_posts", JSON.stringify(savedEvents));
-      }
+// 이벤트 저장 (추가/수정) - API 호출
+const handleSave = async () => {
+  try {
+    if (isEditMode.value && editingEventId.value !== null) {
+      await updateEvent(editingEventId.value, formData.value);
+    } else {
+      await createEvent(formData.value);
     }
-  } else {
-    // 추가 모드
-    const newId = Date.now();
-    const newEvent: EventItem = {
-      id: newId,
-      title: formData.value.title,
-      date: formData.value.date,
-      location: formData.value.location,
-      thumb: formData.value.thumb,
-      link: formData.value.link,
-      status: formData.value.status,
-    };
-    savedEvents.unshift(newEvent);
-    localStorage.setItem("event_posts", JSON.stringify(savedEvents));
-    eventItems.value.unshift(newEvent);
+    closeModal();
+    await loadEvents(); // 목록 갱신
+  } catch (error) {
+    console.error("행사 저장 실패:", error);
+    alert("저장에 실패했습니다. 관리자 로그인 상태를 확인해주세요.");
   }
-
-  closeModal();
 };
 
-const handleDelete = (id: number) => {
+const handleDelete = async (id: number) => {
   if (confirm("정말 삭제하시겠습니까?")) {
-    // localStorage에서도 삭제
-    const savedEvents = JSON.parse(localStorage.getItem("event_posts") || "[]");
-    const filteredSaved = savedEvents.filter((item: { id: number }) => item.id !== id);
-    localStorage.setItem("event_posts", JSON.stringify(filteredSaved));
-
-    // 화면에서도 삭제
-    eventItems.value = eventItems.value.filter((item) => item.id !== id);
+    try {
+      await deleteEvent(id);
+      await loadEvents(); // 목록 갱신
+    } catch (error) {
+      console.error("행사 삭제 실패:", error);
+      alert("삭제에 실패했습니다. 관리자 로그인 상태를 확인해주세요.");
+    }
   }
 };
 
@@ -296,9 +163,9 @@ const handleCardClick = (event: EventItem) => {
 
     <div class="events-grid">
       <ContentCard
-        v-for="event in paginatedItems"
+        v-for="event in eventItems"
         :key="event.id"
-        :thumb="event.thumb || event.thumbnail"
+        :thumb="event.thumb || undefined"
         :alt="event.title"
         :has-link="!!event.link"
         :class="`status-${event.status}`"
@@ -307,7 +174,7 @@ const handleCardClick = (event: EventItem) => {
         <template #overlay>
           <span class="status-badge" :class="event.status">{{ getStatusLabel(event.status) }}</span>
           <CardActions
-            v-if="isAdmin"
+            v-if="authStore.isAdmin"
             @edit="openEditModal(event)"
             @delete="handleDelete(event.id)"
           />
@@ -321,7 +188,9 @@ const handleCardClick = (event: EventItem) => {
     <!-- Pagination -->
     <AppPagination v-model:current-page="currentPage" :total-pages="totalPages">
       <template #right>
-        <button v-if="isAdmin" class="btn-write" @click="openAddModal">이벤트 추가</button>
+        <button v-if="authStore.isAdmin" class="btn-write" @click="openAddModal">
+          이벤트 추가
+        </button>
       </template>
     </AppPagination>
 

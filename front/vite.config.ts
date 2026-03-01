@@ -27,10 +27,11 @@ export default defineConfig({
   server: {
     allowedHosts: true,
     proxy: {
+      // /api/* 요청을 백엔드 서버로 프록시
+      // 프론트: /api/events → 백엔드: http://localhost:3000/api/events
       "/api": {
         target: "http://localhost:3000",
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api/, ""),
       },
     },
   },
