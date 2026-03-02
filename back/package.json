@@ -1,11 +1,13 @@
 {
-  "name": "back",
+  "name": "gonglijeongli-back",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
     "start": "node dist/index.js",
     "dev": "nodemon src/index.ts",
+    "db:start": "prisma migrate deploy && node dist/index.js",
+    "deploy": "prisma migrate deploy",
     "build": "prisma generate && tsc && node -e \"require('fs').cpSync('swagger.yaml','dist/swagger.yaml')\"",
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "run-s lint:*",

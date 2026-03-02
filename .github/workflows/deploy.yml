@@ -53,13 +53,26 @@ jobs:
         with:
           name: build-output
 
+      - name: Create Backend .env File
+        run: |
+          cat << EOF > back/.env
+          PORT=3000
+          NODE_ENV=production
+          CORS_ALLOWED_ORIGINS=${{ vars.CORS_ALLOWED_ORIGINS }}
+          CORS_ALLOWED_DOMAIN=${{ vars.CORS_ALLOWED_DOMAIN }}
+          SESSION_SECRET=${{ secrets.SESSION_SECRET }}
+          ADMIN_USERNAME=${{ secrets.ADMIN_USERNAME }}
+          ADMIN_PASSWORD=${{ secrets.ADMIN_PASSWORD }}
+          DATABASE_URL="file:./prod.db"
+          EOF
+
       - name: Transfer Artifacts to OCI
         uses: appleboy/scp-action@master
         with:
           host: ${{ vars.OCI_HOST }}
           username: ${{ vars.OCI_USERNAME }}
           key: ${{ secrets.OCI_SSH_KEY }}
-          source: "front/dist/**,back/dist/**,back/package.json,back/package-lock.json,back/prisma/**,back/prisma.config.ts"
+          source: "front/dist/**,back/dist/**,back/package.json,back/package-lock.json,back/prisma/**,back/prisma.config.ts,back/.env"
           target: "/home/ubuntu/gonglijeongli-web"
           strip_components: 0
 
@@ -90,6 +103,9 @@ jobs:
             # 백엔드 의존성 설치 (프로덕션용)
             cd /home/ubuntu/gonglijeongli-web/back
             npm ci --omit=dev
+
+            # 마이그레이션 적용 (스키마 변경사항만 안전하게 반영)
+            npx prisma migrate deploy
 
             # PM2를 이용한 백엔드 재시작
             pm2 delete gljl-back || true

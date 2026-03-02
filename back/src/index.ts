@@ -16,13 +16,38 @@ dotenv.config();
 const app = express();
 const port = process.env.PORT || 3000;
 
+// 프로덕션 환경(Nginx, ALB 등 뒤)에서 secure 쿠키가 작동하도록 설정
+// X-Forwarded-Proto 헤더를 신뢰하여 HTTPS 여부를 판단합니다.
+app.set("trust proxy", 1);
+
 // ─── Middleware ───
 
 // CORS 설정: 프론트엔드(Vite dev server)에서의 요청 허용
 // credentials: true → 쿠키(세션)를 포함한 cross-origin 요청 허용
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL || "http://localhost:5173",
+    origin: (origin, callback) => {
+      // 1. origin이 없는 경우 (동일 출처 요청, curl 등 서버 간 통신) -> 허용
+      if (!origin) return callback(null, true);
+
+      // 2. 개발 환경 (localhost) 허용
+      if (origin.startsWith("http://localhost:")) return callback(null, true);
+
+      // 3. 허용된 도메인 리스트 확인 (환경변수)
+      const allowedOrigins = (process.env.CORS_ALLOWED_ORIGINS || "").split(",");
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+
+      // 4. 메인 도메인 및 서브도메인 허용
+      const allowedDomain = process.env.CORS_ALLOWED_DOMAIN;
+      if (allowedDomain && (origin.endsWith(`.${allowedDomain}`) || origin === `https://${allowedDomain}`)) {
+        return callback(null, true);
+      }
+
+      // 그 외 차단
+      callback(new Error("Not allowed by CORS"));
+    },
     credentials: true,
   })
 );
@@ -62,18 +87,18 @@ try {
 
   if (!swaggerFile) throw new Error("swagger.yaml을 찾을 수 없습니다.");
   const swaggerDocument = YAML.load(swaggerFile);
-  app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+  app.use("/api/docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 } catch (error) {
   console.warn("Swagger UI를 로드할 수 없습니다:", (error as Error).message);
 }
 
 // Basic Route
 app.get("/", (req, res) => {
-  res.send("Gonglijeongli API Server is running. Visit /api-docs for Swagger documentation.");
+  res.send("Gonglijeongli API Server is running. Visit /api/docs for Swagger documentation.");
 });
 
 // Start Server
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
-  console.log(`Swagger UI is available at http://localhost:${port}/api-docs`);
+  console.log(`Swagger UI is available at http://localhost:${port}/api/docs`);
 });

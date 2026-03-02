@@ -8,7 +8,21 @@
 		},
 		{
 			"path": "front"
+		},
+		{
+			"name": "SSH FS - oci",
+			"uri": "ssh://oci/home/ubuntu"
 		}
 	],
-	"settings": {}
+	"settings": {
+		"sshfs.configs": [
+			{
+				"name": "oci",
+				"host": "146.56.160.127",
+				"username": "ubuntu",
+				"privateKeyPath": "d:\\gonglijeongli-web\\ai-artifacts\\OCI.key",
+				"root": "~/"
+			}
+		]
+	}
 }
