@@ -2,38 +2,21 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Back: Debug",
-      "type": "node",
-      "request": "launch",
-      "runtimeExecutable": "npx",
-      "runtimeArgs": [
-        "nodemon",
-        "--exec",
-        "node --inspect --require ts-node/register",
-        "src/index.ts"
-      ],
-      "cwd": "${workspaceFolder}/back",
-      "restart": true,
-      "console": "integratedTerminal",
-      "env": { "PORT": "3000" },
-      "skipFiles": ["<node_internals>/**", "**/node_modules/**"]
-    },
-    {
-      "name": "Front: Dev Server",
+      "name": "🚀 Turbo Dev (Full Stack)",
       "type": "node",
       "request": "launch",
       "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "dev"],
-      "cwd": "${workspaceFolder}/front",
+      "runtimeArgs": [
+        "run",
+        "dev"
+      ],
+      "cwd": "${workspaceFolder}",
+      "autoAttachChildProcesses": true,
       "console": "integratedTerminal",
-      "skipFiles": ["<node_internals>/**"]
-    }
-  ],
-  "compounds": [
-    {
-      "name": "Full Stack",
-      "configurations": ["Back: Debug", "Front: Dev Server"],
-      "stopAll": true
+      "skipFiles": [
+        "<node_internals>/**",
+        "**/node_modules/**"
+      ]
     }
   ]
 }

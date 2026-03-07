@@ -2,3 +2,4 @@
 /ai-artifacts
 node_modules
 .cache
+.turbo

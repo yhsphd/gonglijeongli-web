@@ -1,15 +1,21 @@
 {
   "name": "gonglijeongli-web",
   "private": true,
+  "packageManager": "npm@11.6.2",
+  "workspaces": [
+    "front",
+    "back"
+  ],
   "scripts": {
-    "dev:front": "npm run dev --prefix front",
-    "dev:back": "npm run dev --prefix back",
-    "build": "npm run build --prefix front && npm run build --prefix back",
-    "lint": "npm run lint --prefix front && npm run lint --prefix back",
-    "format": "npm run format --prefix front && npm run format --prefix back",
-    "fix": "npm run fix --prefix front && npm run fix --prefix back",
-    "install:all": "npm ci --prefix front && npm ci --prefix back",
-    "clean": "npm run clean --prefix front && npm run clean --prefix back",
-    "reset": "npm run reset --prefix front && npm run reset --prefix back"
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "lint": "turbo run lint",
+    "format": "turbo run format",
+    "fix": "turbo run fix",
+    "clean": "turbo run clean",
+    "reset": "turbo run reset"
+  },
+  "devDependencies": {
+    "turbo": "^2.8.14"
   }
 }
