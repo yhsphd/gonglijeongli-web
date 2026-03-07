@@ -1,0 +1,176 @@
+import { Router, Request, Response } from "express";
+import { prisma } from "../prisma";
+import { requireAdmin } from "../middleware/auth";
+
+const router = Router();
+
+/**
+ * GET /api/news?page=1&limit=10
+ *
+ * 페이지네이션된 뉴스 목록을 반환합니다.
+ */
+router.get("/", async (req: Request, res: Response) => {
+  try {
+    const page = Math.max(1, parseInt(req.query.page as string) || 1);
+    const limit = Math.max(1, Math.min(100, parseInt(req.query.limit as string) || 10));
+
+    const skip = (page - 1) * limit;
+
+    const [items, total] = await Promise.all([
+      prisma.news.findMany({
+        skip,
+        take: limit,
+        // 완전히 동일한 ms(밀리초) 시간대에 작성된 시드 데이터 정렬을 위해 id(순번)를 보조 정렬 조건으로 추가합니다.
+        orderBy: [{ createdAt: "desc" }, { id: "asc" }],
+        select: {
+          id: true,
+          title: true,
+          thumbnail: true,
+          date: true,
+          views: true,
+          likes: true,
+          // content 뺌 (목록엔 필요 없음)
+        },
+      }),
+      prisma.news.count(),
+    ]);
+
+    res.json({ items, total });
+  } catch (error) {
+    console.error("GET /api/news 오류:", error);
+    res.status(500).json({ message: "뉴스 목록을 불러오는 중 오류가 발생했습니다." });
+  }
+});
+
+/**
+ * GET /api/news/:id
+ * 뉴스 상세 조회 (및 조회수 1 증가)
+ */
+router.get("/:id", async (req: Request, res: Response) => {
+  try {
+    const id = parseInt(req.params.id as string);
+    if (isNaN(id)) {
+      res.status(400).json({ message: "유효하지 않은 ID입니다." });
+      return;
+    }
+
+    // 존재하는지 먼저 확인
+    const existing = await prisma.news.findUnique({ where: { id } });
+    if (!existing) {
+      res.status(404).json({ message: "해당 뉴스를 찾을 수 없습니다." });
+      return;
+    }
+
+    // 조회수 1 증가시키고 결과 반환
+    const news = await prisma.news.update({
+      where: { id },
+      data: {
+        views: {
+          increment: 1,
+        },
+      },
+    });
+
+    res.json(news);
+  } catch (error) {
+    console.error("GET /api/news/:id 오류:", error);
+    res.status(500).json({ message: "뉴스를 불러오는 중 오류가 발생했습니다." });
+  }
+});
+
+/**
+ * POST /api/news
+ * 새 공지사항/뉴스 작성.
+ */
+router.post("/", requireAdmin, async (req: Request, res: Response) => {
+  try {
+    const { title, content, thumbnail, date } = req.body;
+
+    if (!title || !content || !date) {
+      res.status(400).json({ message: "title, content, date는 필수입니다." });
+      return;
+    }
+
+    const news = await prisma.news.create({
+      data: {
+        title,
+        content: typeof content === "string" ? content : JSON.stringify(content), // 만약 객체로 오면 문자열 변환
+        thumbnail: thumbnail || null,
+        date,
+      },
+    });
+
+    res.status(201).json(news);
+  } catch (error) {
+    console.error("POST /api/news 오류:", error);
+    res.status(500).json({ message: "뉴스를 생성하는 중 오류가 발생했습니다." });
+  }
+});
+
+/**
+ * PUT /api/news/:id
+ * 뉴스 수정.
+ */
+router.put("/:id", requireAdmin, async (req: Request, res: Response) => {
+  try {
+    const id = parseInt(req.params.id as string);
+    if (isNaN(id)) {
+      res.status(400).json({ message: "유효하지 않은 ID입니다." });
+      return;
+    }
+
+    const { title, content, thumbnail, date, likes } = req.body;
+
+    const existing = await prisma.news.findUnique({ where: { id } });
+    if (!existing) {
+      res.status(404).json({ message: "해당 뉴스를 찾을 수 없습니다." });
+      return;
+    }
+
+    const news = await prisma.news.update({
+      where: { id },
+      data: {
+        ...(title !== undefined && { title }),
+        ...(content !== undefined && {
+          content: typeof content === "string" ? content : JSON.stringify(content),
+        }),
+        ...(thumbnail !== undefined && { thumbnail: thumbnail || null }),
+        ...(date !== undefined && { date }),
+        ...(likes !== undefined && { likes }), // 좋아요 직접 수정 허용하는 경우
+      },
+    });
+
+    res.json(news);
+  } catch (error) {
+    console.error("PUT /api/news/:id 오류:", error);
+    res.status(500).json({ message: "뉴스를 수정하는 중 오류가 발생했습니다." });
+  }
+});
+
+/**
+ * DELETE /api/news/:id
+ * 뉴스 삭제.
+ */
+router.delete("/:id", requireAdmin, async (req: Request, res: Response) => {
+  try {
+    const id = parseInt(req.params.id as string);
+    if (isNaN(id)) {
+      res.status(400).json({ message: "유효하지 않은 ID입니다." });
+      return;
+    }
+
+    const existing = await prisma.news.findUnique({ where: { id } });
+    if (!existing) {
+      res.status(404).json({ message: "해당 뉴스를 찾을 수 없습니다." });
+      return;
+    }
+
+    await prisma.news.delete({ where: { id } });
+    res.status(204).send();
+  } catch (error) {
+    console.error("DELETE /api/news/:id 오류:", error);
+    res.status(500).json({ message: "뉴스를 삭제하는 중 오류가 발생했습니다." });
+  }
+});
+
+export default router;

@@ -1,149 +1,61 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from "vue";
-import { useRouter } from "vue-router";
+import { ref, computed, onMounted, watch } from "vue";
+import { useRouter, useRoute } from "vue-router";
 import PageHeader from "@/components/common/PageHeader.vue";
 import AppPagination from "@/components/common/AppPagination.vue";
+import { useAuthStore } from "@/stores/auth";
+import { fetchNewsList, deleteNews, type NewsListItem } from "@/api/news";
 
 const router = useRouter();
+const route = useRoute();
 
-// 관리자 상태 (추후 인증 시스템/store로 교체)
-const isAdmin = ref(true); // 테스트용 true, 실제로는 false
+const authStore = useAuthStore();
+const isAdmin = computed(() => authStore.isAdmin);
 
-// 기본 데이터 (백엔드 없을 때 사용)
-const defaultPosts = [
-  {
-    id: 1,
-    title: "[행사 공지] 미래세기로의 초대장 부스 안내",
-    date: "2026.02.10",
-    thumb: "/assets/news/hijiri.png",
-    views: 128,
-    likes: 24,
-  },
-  {
-    id: 2,
-    title: "[신작 안내] 동방 팬북 '경계의 저편' 발매",
-    date: "2026.02.05",
-    thumb: "/assets/news/hijiri.png",
-    views: 256,
-    likes: 45,
-  },
-  {
-    id: 3,
-    title: "[통판 안내] 겨울 신작 통신판매 시작",
-    date: "2026.01.28",
-    thumb: "/assets/news/hijiri.png",
-    views: 189,
-    likes: 32,
-  },
-  {
-    id: 4,
-    title: "[행사 공지] 코믹월드 서울 참가 안내",
-    date: "2026.01.15",
-    thumb: "/assets/news/hijiri.png",
-    views: 312,
-    likes: 58,
-  },
-  {
-    id: 5,
-    title: "[공지] 2026년 활동 계획 안내",
-    date: "2026.01.01",
-    thumb: "/assets/news/hijiri.png",
-    views: 421,
-    likes: 73,
-  },
-  {
-    id: 6,
-    title: "[행사 후기] 코믹마켓 C105 참가 후기",
-    date: "2025.12.31",
-    thumb: "/assets/news/hijiri.png",
-    views: 534,
-    likes: 89,
-  },
-  {
-    id: 7,
-    title: "[신작 안내] 동방 일러스트집 예약 안내",
-    date: "2025.12.20",
-    thumb: "/assets/news/hijiri.png",
-    views: 287,
-    likes: 41,
-  },
-  {
-    id: 8,
-    title: "[통판 안내] 여름 신작 통신판매 종료 안내",
-    date: "2025.12.10",
-    thumb: "/assets/news/hijiri.png",
-    views: 156,
-    likes: 19,
-  },
-  {
-    id: 9,
-    title: "[행사 공지] 코믹마켓 C105 참가 안내",
-    date: "2025.11.25",
-    thumb: "/assets/news/hijiri.png",
-    views: 478,
-    likes: 67,
-  },
-  {
-    id: 10,
-    title: "[공지] 서클 홈페이지 오픈",
-    date: "2025.11.01",
-    thumb: "/assets/news/hijiri.png",
-    views: 623,
-    likes: 102,
-  },
-  {
-    id: 11,
-    title: "[행사 후기] 가을 온리전 참가 후기",
-    date: "2025.10.20",
-    thumb: "/assets/news/hijiri.png",
-    views: 345,
-    likes: 52,
-  },
-  {
-    id: 12,
-    title: "[신작 안내] 가을 신작 안내",
-    date: "2025.10.01",
-    thumb: "/assets/news/hijiri.png",
-    views: 267,
-    likes: 38,
-  },
-];
+const newsItems = ref<NewsListItem[]>([]);
+const totalItems = ref(0);
+const isLoading = ref(false);
 
-// 뉴스 아이템 (localStorage + 기본 데이터 병합)
-const newsItems = ref<
-  Array<{
-    id: number;
-    title: string;
-    date: string;
-    thumb?: string;
-    thumbnail?: string;
-    views: number;
-    likes: number;
-  }>
->([]);
-
-// 데이터 로드
-const loadPosts = () => {
-  const savedPosts = JSON.parse(localStorage.getItem("news_posts") || "[]");
-  // localStorage 데이터를 먼저, 그 다음 기본 데이터
-  newsItems.value = [...savedPosts, ...defaultPosts];
-};
-
-onMounted(() => {
-  loadPosts();
-});
-
-// 페이지네이션
 const currentPage = ref(1);
 const itemsPerPage = 10;
 
-const totalPages = computed(() => Math.ceil(newsItems.value.length / itemsPerPage));
-
-const paginatedItems = computed(() => {
-  const start = (currentPage.value - 1) * itemsPerPage;
-  const end = start + itemsPerPage;
-  return newsItems.value.slice(start, end);
+// 파라미터에서 초기 페이지 설정 (옵션)
+onMounted(() => {
+  if (route.query.page) {
+    currentPage.value = parseInt(route.query.page as string) || 1;
+  }
+  loadPosts();
 });
+
+const loadPosts = async () => {
+  isLoading.value = true;
+  try {
+    const data = await fetchNewsList(currentPage.value, itemsPerPage);
+    newsItems.value = data.items;
+    totalItems.value = data.total;
+    renderPage.value = currentPage.value; // 데이터 연동이 됨과 동시에 가상 번호 계산 기준 페이지 업데이트
+  } catch (error) {
+    console.error("뉴스 목록 로드 실패:", error);
+  } finally {
+    isLoading.value = false;
+  }
+};
+
+watch(currentPage, () => {
+  // 페이지 변경시 라우터 쿼리 업데이트
+  router.replace({ query: { ...route.query, page: currentPage.value } });
+  loadPosts();
+});
+
+const totalPages = computed(() => Math.ceil(totalItems.value / itemsPerPage));
+
+// 로딩 완료된 현재 데이터를 기준으로 사용할 렌더링용 페이지 변수
+const renderPage = ref(currentPage.value);
+
+// 가상 번호 계산기 (데이터 세팅 완료 후의 기준으로 번호 계산)
+const getRowNumber = (index: number) => {
+  return totalItems.value - (renderPage.value - 1) * itemsPerPage - index;
+};
 
 // 관리자 기능
 const handleWrite = () => {
@@ -154,15 +66,15 @@ const handleEdit = (id: number) => {
   router.push({ name: "news-write", query: { edit: id } });
 };
 
-const handleDelete = (id: number) => {
+const handleDelete = async (id: number) => {
   if (confirm("정말 삭제하시겠습니까?")) {
-    // localStorage에서도 삭제
-    const savedPosts = JSON.parse(localStorage.getItem("news_posts") || "[]");
-    const filteredSaved = savedPosts.filter((item: { id: number }) => item.id !== id);
-    localStorage.setItem("news_posts", JSON.stringify(filteredSaved));
-
-    // 화면에서도 삭제
-    newsItems.value = newsItems.value.filter((item) => item.id !== id);
+    try {
+      await deleteNews(id);
+      await loadPosts(); // 리스트 갱신
+    } catch (error) {
+      console.error("뉴스 삭제 실패:", error);
+      alert("삭제에 실패했습니다. 관리자 로그인 상태를 확인해주세요.");
+    }
   }
 };
 </script>
@@ -188,11 +100,11 @@ const handleDelete = (id: number) => {
           </tr>
         </thead>
         <tbody>
-          <tr v-for="item in paginatedItems" :key="item.id" class="news-row">
-            <td class="col-no">{{ item.id }}</td>
+          <tr v-for="(item, index) in newsItems" :key="item.id" class="news-row">
+            <td class="col-no">{{ getRowNumber(index) }}</td>
             <td class="col-thumb">
               <div class="thumb-wrapper">
-                <img :src="item.thumb || item.thumbnail" :alt="item.title" class="thumb" />
+                <img v-if="item.thumbnail" :src="item.thumbnail" :alt="item.title" class="thumb" />
               </div>
             </td>
             <td class="col-title">

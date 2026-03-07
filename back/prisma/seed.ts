@@ -82,6 +82,122 @@ const defaultEvents = [
   },
 ];
 
+// NewsView.vue에 있던 defaultPosts를 DB 시드 데이터로 이관
+const defaultNews = [
+  {
+    title: "[행사 공지] 미래세기로의 초대장 부스 안내",
+    date: "2026.02.10",
+    thumbnail: "/assets/news/hijiri.png",
+    views: 128,
+    likes: 24,
+    content: JSON.stringify({
+      type: "doc",
+      content: [
+        {
+          type: "paragraph",
+          content: [
+            {
+              type: "text",
+              text: "2026.01.26에 개최되는 미래세기로의 초대장에서 부스로 찾아뵙게 되었습니다!",
+            },
+          ],
+        },
+      ],
+    }),
+  },
+  {
+    title: "[신작 안내] 동방 팬북 '경계의 저편' 발매",
+    date: "2026.02.05",
+    thumbnail: "/assets/news/hijiri.png",
+    views: 256,
+    likes: 45,
+    content: JSON.stringify({
+      type: "doc",
+      content: [{ type: "paragraph", content: [{ type: "text", text: "가벼운 팬북입니다." }] }],
+    }),
+  },
+  {
+    title: "[통판 안내] 겨울 신작 통신판매 시작",
+    date: "2026.01.28",
+    thumbnail: "/assets/news/hijiri.png",
+    views: 189,
+    likes: 32,
+    content: JSON.stringify({ type: "doc", content: [{ type: "paragraph" }] }),
+  },
+  {
+    title: "[행사 공지] 코믹월드 서울 참가 안내",
+    date: "2026.01.15",
+    thumbnail: "/assets/news/hijiri.png",
+    views: 312,
+    likes: 58,
+    content: JSON.stringify({ type: "doc", content: [{ type: "paragraph" }] }),
+  },
+  {
+    title: "[공지] 2026년 활동 계획 안내",
+    date: "2026.01.01",
+    thumbnail: "/assets/news/hijiri.png",
+    views: 421,
+    likes: 73,
+    content: JSON.stringify({ type: "doc", content: [{ type: "paragraph" }] }),
+  },
+  {
+    title: "[행사 후기] 코믹마켓 C105 참가 후기",
+    date: "2025.12.31",
+    thumbnail: "/assets/news/hijiri.png",
+    views: 534,
+    likes: 89,
+    content: JSON.stringify({ type: "doc", content: [{ type: "paragraph" }] }),
+  },
+  {
+    title: "[신작 안내] 동방 일러스트집 예약 안내",
+    date: "2025.12.20",
+    thumbnail: "/assets/news/hijiri.png",
+    views: 287,
+    likes: 41,
+    content: JSON.stringify({ type: "doc", content: [{ type: "paragraph" }] }),
+  },
+  {
+    title: "[통판 안내] 여름 신작 통신판매 종료 안내",
+    date: "2025.12.10",
+    thumbnail: "/assets/news/hijiri.png",
+    views: 156,
+    likes: 19,
+    content: JSON.stringify({ type: "doc", content: [{ type: "paragraph" }] }),
+  },
+  {
+    title: "[행사 공지] 코믹마켓 C105 참가 안내",
+    date: "2025.11.25",
+    thumbnail: "/assets/news/hijiri.png",
+    views: 478,
+    likes: 67,
+    content: JSON.stringify({ type: "doc", content: [{ type: "paragraph" }] }),
+  },
+  {
+    title: "[공지] 서클 홈페이지 오픈",
+    date: "2025.11.01",
+    thumbnail: "/assets/news/hijiri.png",
+    views: 623,
+    likes: 102,
+    content: JSON.stringify({ type: "doc", content: [{ type: "paragraph" }] }),
+  },
+  {
+    title: "[행사 후기] 가을 온리전 참가 후기",
+    date: "2025.10.20",
+    thumbnail: "/assets/news/hijiri.png",
+    views: 345,
+    likes: 52,
+    content: JSON.stringify({ type: "doc", content: [{ type: "paragraph" }] }),
+  },
+  {
+    title: "[신작 안내] 가을 신작 안내",
+    date: "2025.10.01",
+    thumbnail: "/assets/news/hijiri.png",
+    views: 267,
+    likes: 38,
+    content: JSON.stringify({ type: "doc", content: [{ type: "paragraph" }] }),
+  },
+];
+
 async function main() {
   console.log("🌱 시드 데이터 삽입 시작...");
 
@@ -93,6 +209,15 @@ async function main() {
     console.log(`✅ ${defaultEvents.length}개의 행사 데이터가 삽입되었습니다.`);
   } else {
     console.log(`ℹ️  이미 ${count}개의 행사 데이터가 있습니다. 시드를 건너뜁니다.`);
+  }
+
+  // 뉴스/공지사항 테이블 시드
+  const newsCount = await prisma.news.count();
+  if (newsCount === 0) {
+    await prisma.news.createMany({ data: defaultNews });
+    console.log(`✅ ${defaultNews.length}개의 뉴스 데이터가 삽입되었습니다.`);
+  } else {
+    console.log(`ℹ️  이미 ${newsCount}개의 뉴스 데이터가 있습니다. 시드를 건너뜁니다.`);
   }
 }
 

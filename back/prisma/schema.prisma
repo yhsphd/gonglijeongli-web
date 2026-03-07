@@ -29,3 +29,18 @@ model Event {
 
   @@map("events") // 실제 DB 테이블 이름을 "events"로 지정
 }
+
+// ─── 공지사항/소식(News) 모델 ───
+model News {
+  id        Int      @id @default(autoincrement()) // 자동 증가 PK
+  title     String                                  // 뉴스/공지사항 제목
+  content   String                                  // 본문 내용 (Tiptap JSON의 문자열 형태 등)
+  thumbnail String?                                 // 썸네일 이미지 경로 (선택)
+  date      String                                  // 작성일 표기 (예: "2026.02.10")
+  views     Int      @default(0)                    // 조회수
+  likes     Int      @default(0)                    // 좋아요 수
+  createdAt DateTime @default(now())                // 데이터 생성 시각
+  updatedAt DateTime @updatedAt                     // 데이터 수정 시각
+
+  @@map("news") // 실제 DB 테이블 이름을 "news"로 지정
+}

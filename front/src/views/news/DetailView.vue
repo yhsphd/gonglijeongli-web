@@ -2,25 +2,21 @@
 import { ref, computed, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import TiptapRenderer from "@/components/common/TiptapRenderer.vue";
+import { useAuthStore } from "@/stores/auth";
+import { fetchNewsDetail, deleteNews, type NewsItem } from "@/api/news";
 
 const route = useRoute();
 const router = useRouter();
 
-// 관리자 상태 (추후 인증 시스템/store로 교체)
-const isAdmin = ref(true);
+const authStore = useAuthStore();
+const isAdmin = computed(() => authStore.isAdmin);
 
-// 게시글 데이터
-interface NewsPost {
-  id: number;
-  title: string;
-  content: object;
-  thumbnail: string;
-  date: string;
-  views: number;
-  likes: number;
+// 화면에 렌더링하기 위해 파싱된 상태의 타입을 정의합니다.
+interface ParsedNewsItem extends Omit<NewsItem, "content"> {
+  content: Record<string, unknown> | string;
 }
 
-const post = ref<NewsPost | null>(null);
+const post = ref<ParsedNewsItem | null>(null);
 const isLoading = ref(true);
 const error = ref<string | null>(null);
 
@@ -28,31 +24,24 @@ const error = ref<string | null>(null);
 const postId = computed(() => Number(route.params.id));
 
 // 게시글 로드
-const loadPost = () => {
+const loadPost = async () => {
   isLoading.value = true;
   error.value = null;
 
   try {
-    // TODO: 백엔드 API 연동
-    // 임시: localStorage에서 불러오기
-    const savedPosts: NewsPost[] = JSON.parse(localStorage.getItem("news_posts") || "[]");
-    const foundPost = savedPosts.find((p) => p.id === postId.value);
+    const data = await fetchNewsDetail(postId.value);
 
-    if (foundPost) {
-      post.value = foundPost;
-      // 조회수 증가
-      foundPost.views++;
-      localStorage.setItem("news_posts", JSON.stringify(savedPosts));
-    } else {
-      // 기본 데이터에서 찾기 (임시)
-      const defaultPosts = getDefaultPosts();
-      const defaultPost = defaultPosts.find((p) => p.id === postId.value);
-      if (defaultPost) {
-        post.value = defaultPost;
-      } else {
-        error.value = "게시글을 찾을 수 없습니다.";
+    // content가 string이면 Tiptap JSON으로 파싱
+    let parsedContent: Record<string, unknown> | string = data.content;
+    if (typeof data.content === "string") {
+      try {
+        parsedContent = JSON.parse(data.content);
+      } catch (e) {
+        console.error("Content format error", e);
       }
     }
+
+    post.value = { ...data, content: parsedContent };
   } catch (e) {
     error.value = "게시글을 불러오는 중 오류가 발생했습니다.";
     console.error(e);
@@ -61,91 +50,21 @@ const loadPost = () => {
   }
 };
 
-// 임시 기본 데이터
-const getDefaultPosts = (): NewsPost[] => [
-  {
-    id: 1,
-    title: "[행사 공지] 미래세기로의 초대장 부스 안내",
-    content: {
-      type: "doc",
-      content: [
-        {
-          type: "paragraph",
-          content: [
-            {
-              type: "text",
-              text: "안녕하세요 동방프로젝트 서클 공리와정리입니다.",
-            },
-          ],
-        },
-        {
-          type: "paragraph",
-          content: [
-            {
-              type: "text",
-              text: "2026.01.26에 개최되는 미래세기로의 초대장에서 부스로 찾아뵙게 되었습니다!",
-            },
-          ],
-        },
-        {
-          type: "heading",
-          attrs: { level: 2 },
-          content: [{ type: "text", text: "부스 정보" }],
-        },
-        {
-          type: "bulletList",
-          content: [
-            {
-              type: "listItem",
-              content: [
-                {
-                  type: "paragraph",
-                  content: [{ type: "text", text: "부스 번호: A-15" }],
-                },
-              ],
-            },
-            {
-              type: "listItem",
-              content: [
-                {
-                  type: "paragraph",
-                  content: [{ type: "text", text: "판매 예정 품목: 신작 일러스트집, 기존작 재판" }],
-                },
-              ],
-            },
-          ],
-        },
-        {
-          type: "paragraph",
-          content: [{ type: "text", text: "많은 관심 부탁드립니다!" }],
-        },
-      ],
-    },
-    thumbnail: "/assets/news/hijiri.png",
-    date: "2026.02.10",
-    views: 128,
-    likes: 24,
-  },
-];
-
 // 좋아요 처리
 const handleLike = () => {
   if (post.value) {
-    post.value.likes++;
-    // TODO: 백엔드 API로 좋아요 저장
+    // API 연결 시 별도의 좋아요 API가 있다면 호출 필요 (현재는 낙관적 UI 업데이트 또는 무시)
+    // post.value.likes++;
+    alert("좋아요 기능은 준비 중입니다!");
   }
 };
 
 // 삭제 처리
-const handleDelete = () => {
+const handleDelete = async () => {
   if (!confirm("정말 삭제하시겠습니까?")) return;
 
   try {
-    // TODO: 백엔드 API 연동
-    const savedPosts: NewsPost[] = JSON.parse(localStorage.getItem("news_posts") || "[]");
-    const filtered = savedPosts.filter((p) => p.id !== postId.value);
-    localStorage.setItem("news_posts", JSON.stringify(filtered));
-
+    await deleteNews(postId.value);
     alert("삭제되었습니다.");
     router.push({ name: "news" });
   } catch (e) {
@@ -194,9 +113,8 @@ onMounted(() => {
         <img :src="post.thumbnail" :alt="post.title" />
       </div>
 
-      <!-- 본문 -->
       <article class="post-content">
-        <TiptapRenderer :content="post.content" />
+        <TiptapRenderer :content="post.content as Record<string, unknown>" />
       </article>
 
       <!-- 하단 액션 -->

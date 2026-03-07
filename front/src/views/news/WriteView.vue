@@ -1,17 +1,51 @@
 <script setup lang="ts">
-import { ref } from "vue";
-import { useRouter } from "vue-router";
+import { ref, onMounted } from "vue";
+import { useRouter, useRoute } from "vue-router";
 import TiptapEditor from "@/components/common/TiptapEditor.vue";
+import { createNews, updateNews, fetchNewsDetail } from "@/api/news";
 
 const router = useRouter();
+const route = useRoute();
+
+const editId = ref<number | null>(null);
 
 // 폼 데이터
 const title = ref("");
-const content = ref<object>({
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const content = ref<any>({
   type: "doc",
   content: [{ type: "paragraph" }],
 });
 const thumbnail = ref("");
+
+// 초기 데이터 로드 (수정 모드일 경우)
+onMounted(async () => {
+  if (route.query.edit) {
+    const id = parseInt(route.query.edit as string);
+    if (!isNaN(id)) {
+      editId.value = id;
+      try {
+        const data = await fetchNewsDetail(id);
+        title.value = data.title;
+        thumbnail.value = data.thumbnail || "";
+        // content가 string이면 JSON으로 파싱 시도
+        if (data.content) {
+          try {
+            content.value =
+              typeof data.content === "string" ? JSON.parse(data.content) : data.content;
+          } catch (e) {
+            // 파싱 실패시 텍스트로 취급할 수도 있으나, 본 서비스에서는 Tiptap JSON 구조라고 가정
+            console.error("Content parsing error", e);
+          }
+        }
+      } catch (error) {
+        console.error("뉴스 상세 로드 실패:", error);
+        alert("글 정보를 불러오는데 실패했습니다.");
+        router.push({ name: "news" });
+      }
+    }
+  }
+});
 
 // 저장 처리
 const isSubmitting = ref(false);
@@ -25,25 +59,24 @@ const handleSubmit = async () => {
   isSubmitting.value = true;
 
   try {
-    // TODO: 백엔드 API 연동
-    const newPost = {
-      id: Date.now() % 100, // 임시 ID
+    const todayStr = new Date().toISOString().split("T")[0];
+    const dateFormatted = todayStr ? todayStr.replace(/-/g, ".") : "";
+
+    const postData = {
       title: title.value,
       content: content.value,
-      thumbnail: thumbnail.value || "/assets/news/hijiri.png",
-      date: new Date().toISOString().split("T")[0]?.replace(/-/g, ".") || "",
-      views: 0,
-      likes: 0,
+      thumbnail: thumbnail.value || null,
+      date: dateFormatted,
     };
 
-    console.log("저장할 데이터:", newPost);
+    if (editId.value) {
+      await updateNews(editId.value, postData);
+      alert("글이 수정되었습니다.");
+    } else {
+      await createNews(postData);
+      alert("글이 작성되었습니다.");
+    }
 
-    // 임시: localStorage에 저장
-    const savedPosts = JSON.parse(localStorage.getItem("news_posts") || "[]");
-    savedPosts.unshift(newPost);
-    localStorage.setItem("news_posts", JSON.stringify(savedPosts));
-
-    alert("글이 저장되었습니다.");
     router.push({ name: "news" });
   } catch (error) {
     console.error("저장 실패:", error);
@@ -69,7 +102,7 @@ const handleCancel = () => {
 <template>
   <div class="master-news-write-view">
     <header class="page-header">
-      <h1>글쓰기</h1>
+      <h1>{{ editId ? "글 수정" : "글쓰기" }}</h1>
     </header>
 
     <form class="write-form" @submit.prevent="handleSubmit">

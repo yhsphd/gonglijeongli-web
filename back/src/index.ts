@@ -10,6 +10,7 @@ import path from "path";
 // 라우트 import
 import authRoutes from "./routes/auth";
 import eventsRoutes from "./routes/events";
+import newsRoutes from "./routes/news";
 
 dotenv.config();
 
@@ -80,6 +81,7 @@ app.use(
 // ─── API 라우트 ───
 app.use("/api/auth", authRoutes);
 app.use("/api/events", eventsRoutes);
+app.use("/api/news", newsRoutes);
 
 // Swagger Setup
 try {
