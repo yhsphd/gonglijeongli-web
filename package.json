@@ -9,13 +9,28 @@
   "scripts": {
     "dev": "turbo run dev",
     "build": "turbo run build",
-    "lint": "turbo run lint",
-    "format": "turbo run format",
-    "fix": "turbo run fix",
+    "lint": "run-s lint:*",
+    "lint:oxlint": "oxlint .",
+    "lint:eslint": "eslint . --cache",
+    "format": "prettier --check --experimental-cli .",
+    "fix": "run-s fix:*",
+    "fix:oxlint": "oxlint . --fix",
+    "fix:eslint": "eslint . --fix --cache",
+    "fix:format": "prettier --write --experimental-cli .",
     "clean": "turbo run clean",
     "reset": "turbo run reset"
   },
   "devDependencies": {
-    "turbo": "^2.8.14"
+    "@vue/eslint-config-typescript": "^14.6.0",
+    "eslint": "^9.39.2",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-oxlint": "^1.49.0",
+    "eslint-plugin-vue": "^10.7.0",
+    "npm-run-all2": "^8.0.4",
+    "oxlint": "^1.49.0",
+    "prettier": "^3.8.1",
+    "turbo": "^2.8.14",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.56.0"
   }
 }

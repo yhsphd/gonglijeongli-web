@@ -16,14 +16,14 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
-          cache: 'npm'
+          node-version: "22"
+          cache: "npm"
           cache-dependency-path: |
             front/package-lock.json
             back/package-lock.json
 
       - name: Install Dependencies
-        run: npm run install:all
+        run: npm install
 
       - name: Build
         run: npm run build

@@ -6,17 +6,11 @@
       "type": "node",
       "request": "launch",
       "runtimeExecutable": "npm",
-      "runtimeArgs": [
-        "run",
-        "dev"
-      ],
+      "runtimeArgs": ["run", "dev"],
       "cwd": "${workspaceFolder}",
       "autoAttachChildProcesses": true,
       "console": "integratedTerminal",
-      "skipFiles": [
-        "<node_internals>/**",
-        "**/node_modules/**"
-      ]
+      "skipFiles": ["<node_internals>/**", "**/node_modules/**"]
     }
   ]
 }

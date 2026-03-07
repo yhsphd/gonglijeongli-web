@@ -41,7 +41,10 @@ app.use(
 
       // 4. 메인 도메인 및 서브도메인 허용
       const allowedDomain = process.env.CORS_ALLOWED_DOMAIN;
-      if (allowedDomain && (origin.endsWith(`.${allowedDomain}`) || origin === `https://${allowedDomain}`)) {
+      if (
+        allowedDomain &&
+        (origin.endsWith(`.${allowedDomain}`) || origin === `https://${allowedDomain}`)
+      ) {
         return callback(null, true);
       }
 
