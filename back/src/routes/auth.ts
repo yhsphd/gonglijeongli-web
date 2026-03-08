@@ -10,16 +10,28 @@
  */
 
 import { Router, Request, Response } from "express";
+import { env } from "../config/env";
 
 const router = Router();
 
 // POST /api/auth/login
 router.post("/login", (req: Request, res: Response) => {
+  // #swagger.tags = ['Auth']
+  // #swagger.summary = '관리자 로그인'
+  /* #swagger.parameters['body'] = {
+        in: 'body',
+        description: '관리자 계정 정보',
+        required: true,
+        schema: {
+            username: 'admin',
+            password: 'password'
+        }
+  } */
   const { username, password } = req.body;
 
   // .env에서 관리자 계정 정보 읽기
-  const adminUsername = process.env.ADMIN_USERNAME || "admin";
-  const adminPassword = process.env.ADMIN_PASSWORD || "changeme";
+  const adminUsername = env.ADMIN_USERNAME;
+  const adminPassword = env.ADMIN_PASSWORD;
 
   if (username === adminUsername && password === adminPassword) {
     // 세션에 관리자 정보 저장
@@ -33,6 +45,8 @@ router.post("/login", (req: Request, res: Response) => {
 
 // POST /api/auth/logout
 router.post("/logout", (req: Request, res: Response) => {
+  // #swagger.tags = ['Auth']
+  // #swagger.summary = '관리자 로그아웃'
   req.session.destroy((err) => {
     if (err) {
       res.status(500).json({ message: "로그아웃 중 오류가 발생했습니다." });
@@ -45,6 +59,8 @@ router.post("/logout", (req: Request, res: Response) => {
 
 // GET /api/auth/me
 router.get("/me", (req: Request, res: Response) => {
+  // #swagger.tags = ['Auth']
+  // #swagger.summary = '현재 로그인 상태 확인'
   if (req.session && req.session.isAdmin) {
     res.json({
       isAdmin: true,

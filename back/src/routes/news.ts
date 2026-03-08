@@ -10,6 +10,10 @@ const router = Router();
  * 페이지네이션된 뉴스 목록을 반환합니다.
  */
 router.get("/", async (req: Request, res: Response) => {
+  // #swagger.tags = ['News']
+  // #swagger.summary = '뉴스 목록 조회 (페이지네이션)'
+  // #swagger.parameters['page'] = { in: 'query', type: 'integer', description: '페이지 번호' }
+  // #swagger.parameters['limit'] = { in: 'query', type: 'integer', description: '페이지당 항목 수' }
   try {
     const page = Math.max(1, parseInt(req.query.page as string) || 1);
     const limit = Math.max(1, Math.min(100, parseInt(req.query.limit as string) || 10));
@@ -47,6 +51,9 @@ router.get("/", async (req: Request, res: Response) => {
  * 뉴스 상세 조회 (및 조회수 1 증가)
  */
 router.get("/:id", async (req: Request, res: Response) => {
+  // #swagger.tags = ['News']
+  // #swagger.summary = '뉴스 상세 조회'
+  // #swagger.parameters['id'] = { description: '뉴스 ID' }
   try {
     const id = parseInt(req.params.id as string);
     if (isNaN(id)) {
@@ -83,6 +90,20 @@ router.get("/:id", async (req: Request, res: Response) => {
  * 새 공지사항/뉴스 작성.
  */
 router.post("/", requireAdmin, async (req: Request, res: Response) => {
+  // #swagger.tags = ['News']
+  // #swagger.summary = '새 뉴스 생성'
+  // #swagger.security = [{ "cookieAuth": [] }]
+  /* #swagger.parameters['body'] = {
+        in: 'body',
+        description: '뉴스 데이터',
+        required: true,
+        schema: {
+            title: 'Sample News',
+            content: 'This is the news content',
+            thumbnail: 'https://example.com/image.jpg',
+            date: '2023-10-31'
+        }
+  } */
   try {
     const { title, content, thumbnail, date } = req.body;
 
@@ -112,6 +133,22 @@ router.post("/", requireAdmin, async (req: Request, res: Response) => {
  * 뉴스 수정.
  */
 router.put("/:id", requireAdmin, async (req: Request, res: Response) => {
+  // #swagger.tags = ['News']
+  // #swagger.summary = '뉴스 수정'
+  // #swagger.security = [{ "cookieAuth": [] }]
+  // #swagger.parameters['id'] = { description: '뉴스 ID' }
+  /* #swagger.parameters['body'] = {
+        in: 'body',
+        description: '수정할 뉴스 데이터',
+        required: true,
+        schema: {
+            title: 'Updated News',
+            content: 'Updated content',
+            thumbnail: 'https://example.com/updated.jpg',
+            date: '2023-11-01',
+            likes: 10
+        }
+  } */
   try {
     const id = parseInt(req.params.id as string);
     if (isNaN(id)) {
@@ -152,6 +189,10 @@ router.put("/:id", requireAdmin, async (req: Request, res: Response) => {
  * 뉴스 삭제.
  */
 router.delete("/:id", requireAdmin, async (req: Request, res: Response) => {
+  // #swagger.tags = ['News']
+  // #swagger.summary = '뉴스 삭제'
+  // #swagger.security = [{ "cookieAuth": [] }]
+  // #swagger.parameters['id'] = { description: '뉴스 ID' }
   try {
     const id = parseInt(req.params.id as string);
     if (isNaN(id)) {

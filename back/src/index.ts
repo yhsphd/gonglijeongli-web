@@ -4,18 +4,19 @@ import dotenv from "dotenv";
 import session from "express-session";
 import fs from "fs";
 import swaggerUi from "swagger-ui-express";
-import YAML from "yamljs";
+// import YAML from "yamljs";
 import path from "path";
 
 // 라우트 import
 import authRoutes from "./routes/auth";
 import eventsRoutes from "./routes/events";
 import newsRoutes from "./routes/news";
+import { env } from "./config/env";
 
 dotenv.config();
 
 const app = express();
-const port = process.env.PORT || 3000;
+const port = env.PORT;
 
 // 프로덕션 환경(Nginx, ALB 등 뒤)에서 secure 쿠키가 작동하도록 설정
 // X-Forwarded-Proto 헤더를 신뢰하여 HTTPS 여부를 판단합니다.
@@ -35,13 +36,13 @@ app.use(
       if (origin.startsWith("http://localhost:")) return callback(null, true);
 
       // 3. 허용된 도메인 리스트 확인 (환경변수)
-      const allowedOrigins = (process.env.CORS_ALLOWED_ORIGINS || "").split(",");
+      const allowedOrigins = (env.CORS_ALLOWED_ORIGINS || "").split(",");
       if (allowedOrigins.includes(origin)) {
         return callback(null, true);
       }
 
       // 4. 메인 도메인 및 서브도메인 허용
-      const allowedDomain = process.env.CORS_ALLOWED_DOMAIN;
+      const allowedDomain = env.CORS_ALLOWED_DOMAIN;
       if (
         allowedDomain &&
         (origin.endsWith(`.${allowedDomain}`) || origin === `https://${allowedDomain}`)
@@ -66,11 +67,11 @@ app.use(express.urlencoded({ extended: true }));
 // cookie.secure: HTTPS에서만 쿠키 전송 (개발 시 false)
 app.use(
   session({
-    secret: process.env.SESSION_SECRET || "dev-secret-change-in-production",
+    secret: env.SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
     cookie: {
-      secure: process.env.NODE_ENV === "production", // 프로덕션에서만 HTTPS 필수
+      secure: env.NODE_ENV === "production", // 프로덕션에서만 HTTPS 필수
       httpOnly: true, // JavaScript에서 쿠키 접근 불가 (XSS 방지)
       maxAge: 1000 * 60 * 60 * 24, // 24시간
       sameSite: "lax", // CSRF 방지
@@ -86,12 +87,13 @@ app.use("/api/news", newsRoutes);
 // Swagger Setup
 try {
   const swaggerFile = [
-    path.join(__dirname, "swagger.yaml"), // production (dist/)
-    path.join(__dirname, "..", "swagger.yaml"), // development (src/)
+    path.join(__dirname, "swagger-output.json"), // production (dist/) & dev (src/ since node swagger.js generates it here)
   ].find((p) => fs.existsSync(p));
 
-  if (!swaggerFile) throw new Error("swagger.yaml을 찾을 수 없습니다.");
-  const swaggerDocument = YAML.load(swaggerFile);
+  const swaggerDocument = swaggerFile ? JSON.parse(fs.readFileSync(swaggerFile, "utf-8")) : null;
+  if (!swaggerDocument)
+    throw new Error("swagger-output.json을 찾을 수 없습니다. npm run dev를 재시작하세요.");
+
   app.use("/api/docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 } catch (error) {
   console.warn("Swagger UI를 로드할 수 없습니다:", (error as Error).message);

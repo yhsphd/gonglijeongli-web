@@ -1,0 +1,13 @@
+{
+    "watch": [
+        "src",
+        "swagger.js"
+    ],
+    "ext": "ts",
+    "exec": "node swagger.js && ts-node src/index.ts",
+    "ignore": [
+        "src/swagger-output.json",
+        "dist/*",
+        "src/generated/*"
+    ]
+}

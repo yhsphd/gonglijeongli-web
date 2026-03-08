@@ -23,10 +23,10 @@ const frontConfigs = defineConfigWithVueTs(
         project: ["./tsconfig.json", "./tsconfig.app.json", "./tsconfig.node.json"],
         tsconfigRootDir: path.join(__dirname, "front"),
         extraFileExtensions: [".vue"],
-      }
-    }
+      },
+    },
   }
-).map(cfg => {
+).map((cfg) => {
   if (!cfg.files && !cfg.ignores) {
     return { ...cfg, files: ["front/**/*.{vue,ts,mts,tsx}"] };
   }
@@ -44,24 +44,21 @@ export default [
     "front/components.d.ts",
     "back/prisma.config.ts",
     "back/prisma/**/*",
-    ".turbo/**"
+    "back/swagger.js",
+    ".turbo/**",
   ]),
 
   // BACKEND CONFIG
-  ...tseslint.config(
-    {
-      files: ["back/**/*.{js,cjs,mjs,jsx,ts,mts,tsx}"],
-      extends: [
-        ...tseslint.configs.recommended
-      ],
-      languageOptions: {
-        parserOptions: {
-          project: ["./tsconfig.json"],
-          tsconfigRootDir: path.join(__dirname, "back"),
-        }
-      }
-    }
-  ),
+  ...tseslint.config({
+    files: ["back/**/*.{js,cjs,mjs,jsx,ts,mts,tsx}"],
+    extends: [...tseslint.configs.recommended],
+    languageOptions: {
+      parserOptions: {
+        project: ["./tsconfig.json"],
+        tsconfigRootDir: path.join(__dirname, "back"),
+      },
+    },
+  }),
 
   // FRONTEND CONFIG
   ...frontConfigs,

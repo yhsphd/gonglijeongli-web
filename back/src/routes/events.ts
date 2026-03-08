@@ -39,6 +39,10 @@ const router = Router();
  * }
  */
 router.get("/", async (req: Request, res: Response) => {
+  // #swagger.tags = ['Events']
+  // #swagger.summary = '행사 목록 조회 (페이지네이션)'
+  // #swagger.parameters['page'] = { in: 'query', type: 'integer', description: '페이지 번호' }
+  // #swagger.parameters['limit'] = { in: 'query', type: 'integer', description: '페이지당 항목 수' }
   try {
     const page = Math.max(1, parseInt(req.query.page as string) || 1);
     const limit = Math.max(1, Math.min(100, parseInt(req.query.limit as string) || 10));
@@ -92,6 +96,22 @@ router.get("/", async (req: Request, res: Response) => {
  * }
  */
 router.post("/", requireAdmin, async (req: Request, res: Response) => {
+  // #swagger.tags = ['Events']
+  // #swagger.summary = '새 행사 생성'
+  // #swagger.security = [{ "cookieAuth": [] }]
+  /* #swagger.parameters['body'] = {
+        in: 'body',
+        description: '행사 데이터',
+        required: true,
+        schema: {
+            title: 'Sample Event',
+            date: '2023-10-31',
+            location: 'Seoul',
+            thumb: 'https://example.com/image.jpg',
+            link: 'https://example.com',
+            status: 'upcoming'
+        }
+  } */
   try {
     const { title, date, location, thumb, link, status } = req.body;
 
@@ -141,6 +161,23 @@ router.post("/", requireAdmin, async (req: Request, res: Response) => {
  * 기존 행사를 수정합니다. 관리자 인증 필요.
  */
 router.put("/:id", requireAdmin, async (req: Request, res: Response) => {
+  // #swagger.tags = ['Events']
+  // #swagger.summary = '행사 수정'
+  // #swagger.security = [{ "cookieAuth": [] }]
+  // #swagger.parameters['id'] = { description: '행사 ID' }
+  /* #swagger.parameters['body'] = {
+        in: 'body',
+        description: '수정할 행사 데이터',
+        required: true,
+        schema: {
+            title: 'Updated Event',
+            date: '2023-11-01',
+            location: 'Busan',
+            thumb: 'https://example.com/updated.jpg',
+            link: 'https://example.com/updated',
+            status: 'ongoing'
+        }
+  } */
   try {
     const id = parseInt(req.params.id as string);
     if (isNaN(id)) {
@@ -199,6 +236,10 @@ router.put("/:id", requireAdmin, async (req: Request, res: Response) => {
  * 성공 시 204 No Content 반환.
  */
 router.delete("/:id", requireAdmin, async (req: Request, res: Response) => {
+  // #swagger.tags = ['Events']
+  // #swagger.summary = '행사 삭제'
+  // #swagger.security = [{ "cookieAuth": [] }]
+  // #swagger.parameters['id'] = { description: '행사 ID' }
   try {
     const id = parseInt(req.params.id as string);
     if (isNaN(id)) {

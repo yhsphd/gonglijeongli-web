@@ -28,6 +28,17 @@ jobs:
       - name: Build
         run: npm run build
 
+      - name: Verify Swagger Output is Committed
+        run: |
+          # 백엔드 빌드 시 swagger.js가 실행되어 swagger-output.json이 갱신됨.
+          # 만약 개발자가 로컬에서 재생성한 파일과 커밋된 파일이 다르다면(또는 파일이 없다면)
+          # git diff가 발생하므로 에러 처리하여 파이프라인 중단.
+          if [[ -n $(git status --porcelain back/src/swagger-output.json) ]]; then
+            echo "::error::swagger-output.json 가 최신 상태가 아닙니다! 로컬 백엔드에서 npm run dev나 swagger.js를 실행하여 변경된 swagger-output.json을 커밋해 주세요."
+            git diff back/src/swagger-output.json
+            exit 1
+          fi
+
       - name: Upload Build Artifacts
         uses: actions/upload-artifact@v4
         with:

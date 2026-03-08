@@ -16,15 +16,15 @@
  *   const events = await prisma.event.findMany();
  */
 
-import path from "path";
 import "dotenv/config"; // 라우터 등에서 로드되기 전에 환경변수를 읽기 위해 추가
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore - 'npm run clean' 시 generated 폴더가 삭제되어 생기는 잠재적 타입 에러 무시
 import { PrismaClient } from "./generated/prisma/client";
 import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
+import { env } from "./config/env";
 
 // SQLite DB URL (환경변수 DATABASE_URL 우선, 없으면 로컬 dev.db)
-const dbUrl = process.env.DATABASE_URL || `file:${path.resolve(__dirname, "..", "dev.db")}`;
+const dbUrl = env.DATABASE_URL;
 
 // 드라이버 어댑터 생성: Prisma와 실제 DB 드라이버를 연결하는 중간 레이어
 const adapter = new PrismaBetterSqlite3({ url: dbUrl });
