@@ -18,9 +18,7 @@ jobs:
         with:
           node-version: "22"
           cache: "npm"
-          cache-dependency-path: |
-            front/package-lock.json
-            back/package-lock.json
+          cache-dependency-path: package-lock.json
 
       - name: Install Dependencies
         run: npm install
@@ -44,10 +42,12 @@ jobs:
         with:
           name: build-output
           path: |
+            package.json
+            package-lock.json
+            front/package.json
             front/dist/
-            back/dist/
             back/package.json
-            back/package-lock.json
+            back/dist/
             back/prisma/
             back/prisma.config.ts
           retention-days: 3
@@ -74,8 +74,23 @@ jobs:
           SESSION_SECRET=${{ secrets.SESSION_SECRET }}
           ADMIN_USERNAME=${{ secrets.ADMIN_USERNAME }}
           ADMIN_PASSWORD=${{ secrets.ADMIN_PASSWORD }}
-          DATABASE_URL="file:./prod.db"
+          DATABASE_URL="file:${{ vars.OCI_DEPLOY_PATH }}/gonglijeongli-data/prod.db"
+          UPLOAD_DIR="${{ vars.OCI_DEPLOY_PATH }}/gonglijeongli-data/uploads"
           EOF
+
+      - name: Prepare Deployment Directory
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ vars.OCI_HOST }}
+          username: ${{ vars.OCI_USERNAME }}
+          key: ${{ secrets.OCI_SSH_KEY }}
+          script: |
+            # 영구 데이터 저장용 디렉터리 생성
+            mkdir -p ${{ vars.OCI_DEPLOY_PATH }}/gonglijeongli-data/uploads
+
+            # 이전 임시 디렉터리 삭제 및 새 임시 디렉터리 생성
+            rm -rf ${{ vars.OCI_DEPLOY_PATH }}/gonglijeongli-web-tmp
+            mkdir -p ${{ vars.OCI_DEPLOY_PATH }}/gonglijeongli-web-tmp
 
       - name: Transfer Artifacts to OCI
         uses: appleboy/scp-action@master
@@ -83,8 +98,8 @@ jobs:
           host: ${{ vars.OCI_HOST }}
           username: ${{ vars.OCI_USERNAME }}
           key: ${{ secrets.OCI_SSH_KEY }}
-          source: "front/dist/**,back/dist/**,back/package.json,back/package-lock.json,back/prisma/**,back/prisma.config.ts,back/.env"
-          target: "/home/ubuntu/gonglijeongli-web"
+          source: "package.json,package-lock.json,front/package.json,front/dist/**,back/dist/**,back/package.json,back/prisma/**,back/prisma.config.ts,back/.env"
+          target: "${{ vars.OCI_DEPLOY_PATH }}/gonglijeongli-web-tmp"
           strip_components: 0
 
       - name: Deploy on OCI
@@ -96,26 +111,39 @@ jobs:
           script: |
             set -euo pipefail
 
-            FRONT_SRC="/home/ubuntu/gonglijeongli-web/front/dist"
+            DEPLOY_PATH="${{ vars.OCI_DEPLOY_PATH }}"
+
+            # 새 빌드 파일 교체 (기존 소스 삭제 후 tmp에서 이동)
+            sudo rm -rf "$DEPLOY_PATH/gonglijeongli-web"
+            sudo mv "$DEPLOY_PATH/gonglijeongli-web-tmp" "$DEPLOY_PATH/gonglijeongli-web"
+            sudo chown -R $USER:$USER "$DEPLOY_PATH/gonglijeongli-web"
+
+            FRONT_SRC="$DEPLOY_PATH/gonglijeongli-web/front/dist"
             FRONT_DST="/var/www/gonglijeongli"
 
-            # 프론트 정적 파일 배포
+            # 프론트 정적 파일 배포 (심볼릭 링크 사용)
             if [ ! -f "$FRONT_SRC/index.html" ]; then
               echo "[ERROR] $FRONT_SRC/index.html not found. Frontend build artifact missing." >&2
               exit 1
             fi
 
-            sudo mkdir -p "$FRONT_DST"
-            sudo rsync -a --delete "$FRONT_SRC/" "$FRONT_DST/"
-            sudo chown -R root:www-data "$FRONT_DST"
-            sudo find "$FRONT_DST" -type d -exec chmod 755 {} \;
-            sudo find "$FRONT_DST" -type f -exec chmod 644 {} \;
+            # 기존 심볼릭 링크(또는 디렉터리) 삭제 후 dist 폴더 전체를 링크
+            sudo rm -rf "$FRONT_DST"
+            sudo ln -s "$FRONT_SRC" "$FRONT_DST"
+
+            sudo chown -R root:www-data "$FRONT_SRC"
+            sudo find "$FRONT_SRC" -type d -exec chmod 755 {} \;
+            sudo find "$FRONT_SRC" -type f -exec chmod 644 {} \;
+
+            # Nginx가 해당 심볼릭 링크를 따라가 원본 파일들에 접근하려면 부모 경로들에 x(실행, 탐색) 권한이 필요함
+            sudo chmod +x "/home" "$DEPLOY_PATH" "$DEPLOY_PATH/gonglijeongli-web" "$DEPLOY_PATH/gonglijeongli-web/front"
 
             # 백엔드 의존성 설치 (프로덕션용)
-            cd /home/ubuntu/gonglijeongli-web/back
-            npm ci --omit=dev
+            cd "$DEPLOY_PATH/gonglijeongli-web"
+            npm ci --omit=dev --workspace=back
 
             # 마이그레이션 적용 (스키마 변경사항만 안전하게 반영)
+            cd "$DEPLOY_PATH/gonglijeongli-web/back"
             npx prisma migrate deploy
 
             # PM2를 이용한 백엔드 재시작
