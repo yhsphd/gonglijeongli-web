@@ -3,8 +3,15 @@ import { ref } from "vue";
 import { useAuthStore } from "@/stores/auth";
 import AdminModal from "@/components/common/AdminModal.vue";
 import FormInput from "@/components/common/FormInput.vue";
+import { faGithub } from "@fortawesome/free-brands-svg-icons";
+import { faCodeBranch } from "@fortawesome/free-solid-svg-icons";
 
 const authStore = useAuthStore();
+
+// 빌드 정보
+const commitHash = __COMMIT_HASH__;
+const buildTime = __BUILD_TIME__;
+const isDev = import.meta.env.DEV;
 
 // 로그인 모달
 const showLoginModal = ref(false);
@@ -34,7 +41,24 @@ const handleLogout = async () => {
 
 <template>
   <div class="footer">
-    <p>&copy; 2026 공리와정리. All rights reserved.</p>
+    <div class="footer-content">
+      <p>&copy; 2026 공리와정리. All rights reserved.</p>
+      <div class="footer-meta">
+        <a
+          href="https://github.com/yhsphd/gonglijeongli-web"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <FontAwesomeIcon :icon="faGithub" />
+        </a>
+        <span class="divider">|</span>
+        <span class="version-info">
+          <FontAwesomeIcon :icon="faCodeBranch" />
+          <template v-if="isDev"> Development Server</template>
+          <template v-else> {{ commitHash }} ({{ buildTime }})</template>
+        </span>
+      </div>
+    </div>
     <button v-if="!authStore.isAdmin" class="btn-admin" @click="openLoginModal">관리자</button>
     <button v-else class="btn-admin btn-admin--active" @click="handleLogout">
       로그아웃 ({{ authStore.username }})
@@ -69,6 +93,33 @@ const handleLogout = async () => {
   padding: var(--spacing-lg);
   background-color: var(--color-bg-secondary);
   color: var(--color-text-muted);
+}
+
+.footer-content p {
+  margin: 0 0 var(--spacing-xs) 0;
+}
+
+.footer-meta {
+  font-size: var(--font-size-xs);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-xs);
+  color: var(--color-text-muted);
+}
+
+.footer-meta a {
+  color: inherit;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.footer-meta a:hover {
+  color: var(--color-primary);
+}
+
+.divider {
+  opacity: 0.5;
 }
 
 .btn-admin {

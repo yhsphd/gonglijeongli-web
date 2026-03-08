@@ -1,4 +1,5 @@
 import { fileURLToPath, URL } from "node:url";
+import { execSync } from "node:child_process";
 
 import { defineConfig } from "vite";
 import vue from "@vitejs/plugin-vue";
@@ -7,8 +8,21 @@ import AutoImport from "unplugin-auto-import/vite";
 import Components from "unplugin-vue-components/vite";
 import { ElementPlusResolver } from "unplugin-vue-components/resolvers";
 
+// Get git commit hash and build time
+let commitHash = "";
+try {
+  commitHash = execSync("git rev-parse --short HEAD").toString().trim();
+} catch {
+  commitHash = "unknown";
+}
+const buildTime = new Date().toLocaleString("ko-KR", { timeZone: "Asia/Seoul" });
+
 // https://vite.dev/config/
 export default defineConfig({
+  define: {
+    __COMMIT_HASH__: JSON.stringify(commitHash),
+    __BUILD_TIME__: JSON.stringify(buildTime),
+  },
   plugins: [
     vue(),
     vueDevTools(),
