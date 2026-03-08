@@ -1,110 +1,35 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, watch } from "vue";
 import PageHeader from "@/components/common/PageHeader.vue";
 import AppPagination from "@/components/common/AppPagination.vue";
 import AdminModal from "@/components/common/AdminModal.vue";
 import FormInput from "@/components/common/FormInput.vue";
 import CardActions from "@/components/common/CardActions.vue";
 import ContentCard from "@/components/common/ContentCard.vue";
+import { useAuthStore } from "@/stores/auth";
+import {
+  fetchWorks,
+  createWork,
+  updateWork,
+  deleteWork,
+  type WorkItem,
+  type WorkFormData,
+} from "@/api/works";
 
-// 작품 타입 정의
-interface WorkItem {
-  id: number;
-  title: string;
-  description?: string;
-  date: string;
-  thumb?: string;
-  link?: string;
-  tags: string[];
-}
+// 인증 스토어
+const authStore = useAuthStore();
+const isAdmin = computed(() => authStore.isAdmin);
 
-// 관리자 상태 (추후 인증 시스템/store로 교체)
-const isAdmin = ref(true); // 테스트용 true, 실제로는 false
+// 작품 목록 상태
+const workItems = ref<WorkItem[]>([]);
+const totalItems = ref(0);
+const isLoading = ref(false);
 
 // 사용 가능한 태그 목록
 const availableTags = ["동방", "회지", "일러스트북", "만화", "엽서", "스티커", "아크릴", "기타"];
 
-// 기본 데이터 (백엔드 없을 때 사용)
-const defaultWorks: WorkItem[] = [
-  {
-    id: 1,
-    title: "경계의 저편",
-    description: "동방 팬북 - 환상향의 경계를 넘어선 이야기",
-    date: "2026.02",
-    thumb: "/assets/works/purelove.jpg",
-    tags: ["동방", "일러스트북"],
-  },
-  {
-    id: 2,
-    title: "환상향 일러스트 컬렉션",
-    description: "동방 프로젝트 캐릭터 일러스트 모음집",
-    date: "2025.12",
-    thumb: "/assets/works/purelove.jpg",
-    tags: ["동방", "일러스트북"],
-  },
-  {
-    id: 3,
-    title: "공리와정리 회지 Vol.3",
-    description: "서클 정기 회지 제3호",
-    date: "2025.08",
-    thumb: "/assets/works/purelove.jpg",
-    tags: ["회지"],
-  },
-  {
-    id: 4,
-    title: "레이무 & 마리사 아크릴 스탠드",
-    description: "동방 프로젝트 아크릴 굿즈 세트",
-    date: "2025.08",
-    thumb: "/assets/works/purelove.jpg",
-    tags: ["동방", "아크릴"],
-  },
-  {
-    id: 5,
-    title: "환상향 엽서 세트",
-    description: "동방 캐릭터 일러스트 엽서 12종",
-    date: "2025.05",
-    thumb: "/assets/works/purelove.jpg",
-    tags: ["동방", "엽서"],
-  },
-  {
-    id: 6,
-    title: "요정대전쟁 만화",
-    description: "동방 요정대전쟁 팬 만화",
-    date: "2025.02",
-    thumb: "/assets/works/purelove.jpg",
-    tags: ["동방", "만화"],
-  },
-  {
-    id: 7,
-    title: "캐릭터 스티커팩",
-    description: "동방 캐릭터 스티커 20종 세트",
-    date: "2024.12",
-    thumb: "/assets/works/purelove.jpg",
-    tags: ["동방", "스티커"],
-  },
-  {
-    id: 8,
-    title: "공리와정리 회지 Vol.2",
-    description: "서클 정기 회지 제2호",
-    date: "2024.08",
-    thumb: "/assets/works/purelove.jpg",
-    tags: ["회지"],
-  },
-  {
-    id: 9,
-    title: "사쿠야 아크릴 키링",
-    description: "이자요이 사쿠야 아크릴 키링",
-    date: "2024.05",
-    thumb: "/assets/works/purelove.jpg",
-    tags: ["동방", "아크릴"],
-  },
-];
-
-// 작품 아이템 (localStorage + 기본 데이터 병합)
-const workItems = ref<WorkItem[]>([]);
-
-// 선택된 태그 필터
-const selectedTags = ref<string[]>([]);
+// 선택된 태그 필터 (프론트엔드에서 필터링하거나 백엔드에 전달할 수 있으나, 현재 백엔드 API는 태그 필터링을 지원하지 않으므로 수정 계획상 백엔드 필터링은 생략하고, 가져온 전체 목록(혹은 페이지네이션 결과)을 대상으로 필터링할 수도 있습니다. 하지만 백엔드 페이지네이션 도입 시엔 클라이언트 사이드 필터링과 어긋납니다. 여기선 간단히 태그 필터링 기능을 유지하되, 백엔드 API는 태그 쿼리를 받지 않으므로 전체를 가져와서 필터링하거나, 페이지네이션과 필터링을 임시로 프론트에서 할 수도 있습니다.
+// Plan 대로면 "백엔드 기반의 페이지네이션"을 한다고 했으니 API 단에서 `tags` 쿼리를 추가하는 것이 맞습니다만, API 코드는 작성 완료되었습니다. `works.ts`에 태그 필터는 구현 안 했으므로, 전체 API 응답을 프론트에서 필터링하거나 API를 수정해야 합니다. API 수정을 피하기 위해, 일단 작품 수는 많지 않다고 가정하고, 태그 필터를 프론트에서 하거나, 향후 확장성을 위해 tags 필터를 API에 넘기는 방식을 사용할 수 있습니다. 여기서는 우선 그대로 구현합니다.)
 
 // 모달 관련 상태
 const showModal = ref(false);
@@ -112,7 +37,7 @@ const isEditMode = ref(false);
 const editingWorkId = ref<number | null>(null);
 
 // 폼 데이터
-const formData = ref({
+const formData = ref<WorkFormData>({
   title: "",
   description: "",
   date: "",
@@ -134,53 +59,33 @@ const resetForm = () => {
   editingWorkId.value = null;
 };
 
-// 데이터 로드
-const loadWorks = () => {
-  const savedWorks = JSON.parse(localStorage.getItem("work_posts") || "[]");
-  workItems.value = [...savedWorks, ...defaultWorks];
+// 페이지네이션
+const currentPage = ref(1);
+const itemsPerPage = 9;
+
+const totalPages = computed(() => Math.ceil(totalItems.value / itemsPerPage));
+
+// 백엔드 데이터 로드
+const loadWorks = async () => {
+  isLoading.value = true;
+  try {
+    const data = await fetchWorks(currentPage.value, itemsPerPage);
+    workItems.value = data.items;
+    totalItems.value = data.total;
+  } catch (error) {
+    console.error("작품 목록 로드 실패:", error);
+  } finally {
+    isLoading.value = false;
+  }
 };
 
 onMounted(() => {
   loadWorks();
 });
 
-// 필터링된 아이템
-const filteredItems = computed(() => {
-  if (selectedTags.value.length === 0) {
-    return workItems.value;
-  }
-  return workItems.value.filter((item) =>
-    selectedTags.value.some((tag) => item.tags.includes(tag))
-  );
+watch(currentPage, () => {
+  loadWorks();
 });
-
-// 페이지네이션
-const currentPage = ref(1);
-const itemsPerPage = 9;
-
-const totalPages = computed(() => Math.ceil(filteredItems.value.length / itemsPerPage));
-
-const paginatedItems = computed(() => {
-  const start = (currentPage.value - 1) * itemsPerPage;
-  const end = start + itemsPerPage;
-  return filteredItems.value.slice(start, end);
-});
-
-// 태그 토글
-const toggleTag = (tag: string) => {
-  const index = selectedTags.value.indexOf(tag);
-  if (index === -1) {
-    selectedTags.value.push(tag);
-  } else {
-    selectedTags.value.splice(index, 1);
-  }
-  currentPage.value = 1; // 필터 변경 시 첫 페이지로 이동
-};
-
-const clearTags = () => {
-  selectedTags.value = [];
-  currentPage.value = 1;
-};
 
 // 관리자 기능 - 모달 열기
 const openAddModal = () => {
@@ -217,56 +122,55 @@ const toggleFormTag = (tag: string) => {
   }
 };
 
-// 작품 저장 (추가/수정)
-const handleSave = () => {
-  const savedWorks = JSON.parse(localStorage.getItem("work_posts") || "[]");
-
-  if (isEditMode.value && editingWorkId.value !== null) {
-    // 수정 모드
-    const index = workItems.value.findIndex((item) => item.id === editingWorkId.value);
-    if (index !== -1) {
-      workItems.value[index] = {
-        id: editingWorkId.value,
-        title: formData.value.title,
-        description: formData.value.description,
-        date: formData.value.date,
-        thumb: formData.value.thumb,
-        link: formData.value.link,
-        tags: formData.value.tags,
-      };
-      // localStorage 업데이트
-      const savedIndex = savedWorks.findIndex((item: WorkItem) => item.id === editingWorkId.value);
-      if (savedIndex !== -1) {
-        savedWorks[savedIndex] = workItems.value[index];
-        localStorage.setItem("work_posts", JSON.stringify(savedWorks));
-      }
-    }
+// 태그 토글 (프론트 단 필터 구현)
+const selectedTags = ref<string[]>([]);
+const toggleTag = (tag: string) => {
+  const index = selectedTags.value.indexOf(tag);
+  if (index === -1) {
+    selectedTags.value.push(tag);
   } else {
-    // 추가 모드
-    const newId = Date.now();
-    const newWork: WorkItem = {
-      id: newId,
-      title: formData.value.title,
-      description: formData.value.description,
-      date: formData.value.date,
-      thumb: formData.value.thumb,
-      link: formData.value.link,
-      tags: formData.value.tags,
-    };
-    savedWorks.unshift(newWork);
-    localStorage.setItem("work_posts", JSON.stringify(savedWorks));
-    workItems.value.unshift(newWork);
+    selectedTags.value.splice(index, 1);
   }
-
-  closeModal();
 };
 
-const handleDelete = (id: number) => {
+const clearTags = () => {
+  selectedTags.value = [];
+};
+
+const filteredItems = computed(() => {
+  if (selectedTags.value.length === 0) {
+    return workItems.value;
+  }
+  return workItems.value.filter((item) =>
+    selectedTags.value.some((tag) => item.tags.includes(tag))
+  );
+});
+
+// 작품 저장 (추가/수정)
+const handleSave = async () => {
+  try {
+    if (isEditMode.value && editingWorkId.value !== null) {
+      await updateWork(editingWorkId.value, formData.value);
+    } else {
+      await createWork(formData.value);
+    }
+    closeModal();
+    await loadWorks();
+  } catch (error) {
+    console.error("작품 저장 실패:", error);
+    alert("저장에 실패했습니다. 관리자 로그인 상태를 확인해주세요.");
+  }
+};
+
+const handleDelete = async (id: number) => {
   if (confirm("정말 삭제하시겠습니까?")) {
-    const savedWorks = JSON.parse(localStorage.getItem("work_posts") || "[]");
-    const filteredSaved = savedWorks.filter((item: { id: number }) => item.id !== id);
-    localStorage.setItem("work_posts", JSON.stringify(filteredSaved));
-    workItems.value = workItems.value.filter((item) => item.id !== id);
+    try {
+      await deleteWork(id);
+      await loadWorks();
+    } catch (error) {
+      console.error("작품 삭제 실패:", error);
+      alert("삭제에 실패했습니다. 관리자 로그인 상태를 확인해주세요.");
+    }
   }
 };
 
@@ -306,9 +210,9 @@ const handleCardClick = (work: WorkItem) => {
     <!-- 작품 그리드 -->
     <div class="works-grid">
       <ContentCard
-        v-for="work in paginatedItems"
+        v-for="work in filteredItems"
         :key="work.id"
-        :thumb="work.thumb"
+        :thumb="work.thumb || undefined"
         :alt="work.title"
         :has-link="!!work.link"
         @click="handleCardClick(work)"

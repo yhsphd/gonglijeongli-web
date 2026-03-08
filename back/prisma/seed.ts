@@ -198,27 +198,88 @@ const defaultNews = [
   },
 ];
 
+const defaultWorks = [
+  {
+    title: "경계의 저편",
+    description: "동방 팬북 - 환상향의 경계를 넘어선 이야기",
+    date: "2026.02",
+    thumb: "/assets/works/purelove.jpg",
+    tags: JSON.stringify(["동방", "일러스트북"]),
+  },
+  {
+    title: "환상향 일러스트 컬렉션",
+    description: "동방 프로젝트 캐릭터 일러스트 모음집",
+    date: "2025.12",
+    thumb: "/assets/works/purelove.jpg",
+    tags: JSON.stringify(["동방", "일러스트북"]),
+  },
+  {
+    title: "공리와정리 회지 Vol.3",
+    description: "서켤 정기 회지 제3호",
+    date: "2025.08",
+    thumb: "/assets/works/purelove.jpg",
+    tags: JSON.stringify(["회지"]),
+  },
+  {
+    title: "레이무 & 마리사 아크릴 스탠드",
+    description: "동방 프로젝트 아크릴 굿즈 세트",
+    date: "2025.08",
+    thumb: "/assets/works/purelove.jpg",
+    tags: JSON.stringify(["동방", "아크릴"]),
+  },
+  {
+    title: "환상향 엽서 세트",
+    description: "동방 캐릭터 일러스트 엽서 12종",
+    date: "2025.05",
+    thumb: "/assets/works/purelove.jpg",
+    tags: JSON.stringify(["동방", "엽서"]),
+  },
+  {
+    title: "요정대전쟁 만화",
+    description: "동방 요정대전쟁 팬 만화",
+    date: "2025.02",
+    thumb: "/assets/works/purelove.jpg",
+    tags: JSON.stringify(["동방", "만화"]),
+  },
+  {
+    title: "캐릭터 스티커팩",
+    description: "동방 캐릭터 스티커 20종 세트",
+    date: "2024.12",
+    thumb: "/assets/works/purelove.jpg",
+    tags: JSON.stringify(["동방", "스티커"]),
+  },
+  {
+    title: "공리와정리 회지 Vol.2",
+    description: "서클 정기 회지 제2호",
+    date: "2024.08",
+    thumb: "/assets/works/purelove.jpg",
+    tags: JSON.stringify(["회지"]),
+  },
+  {
+    title: "사쿠야 아크릴 키링",
+    description: "이자요이 사쿠야 아크릴 키링",
+    date: "2024.05",
+    thumb: "/assets/works/purelove.jpg",
+    tags: JSON.stringify(["동방", "아크릴"]),
+  },
+];
+
 async function main() {
+  console.log("🌱 데이터 초기화 중...");
+  await prisma.event.deleteMany({});
+  await prisma.news.deleteMany({});
+  await prisma.work.deleteMany({});
+
   console.log("🌱 시드 데이터 삽입 시작...");
 
-  // 테이블이 비어있을 때만 삽입 (중복 방지)
-  const count = await prisma.event.count();
-  if (count === 0) {
-    // createMany: 여러 레코드를 한 번에 INSERT (성능 좋음)
-    await prisma.event.createMany({ data: defaultEvents });
-    console.log(`✅ ${defaultEvents.length}개의 행사 데이터가 삽입되었습니다.`);
-  } else {
-    console.log(`ℹ️  이미 ${count}개의 행사 데이터가 있습니다. 시드를 건너뜁니다.`);
-  }
+  await prisma.event.createMany({ data: defaultEvents });
+  console.log(`✅ ${defaultEvents.length}개의 행사 데이터가 삽입되었습니다.`);
 
-  // 뉴스/공지사항 테이블 시드
-  const newsCount = await prisma.news.count();
-  if (newsCount === 0) {
-    await prisma.news.createMany({ data: defaultNews });
-    console.log(`✅ ${defaultNews.length}개의 뉴스 데이터가 삽입되었습니다.`);
-  } else {
-    console.log(`ℹ️  이미 ${newsCount}개의 뉴스 데이터가 있습니다. 시드를 건너뜁니다.`);
-  }
+  await prisma.news.createMany({ data: defaultNews });
+  console.log(`✅ ${defaultNews.length}개의 뉴스 데이터가 삽입되었습니다.`);
+
+  await prisma.work.createMany({ data: defaultWorks });
+  console.log(`✅ ${defaultWorks.length}개의 작품 데이터가 삽입되었습니다.`);
 }
 
 main()

@@ -44,3 +44,18 @@ model News {
 
   @@map("news") // 실제 DB 테이블 이름을 "news"로 지정
 }
+
+// ─── 작품(Work) 모델 ───
+model Work {
+  id          Int      @id @default(autoincrement()) // 자동 증가 PK
+  title       String                                  // 작품명
+  description String?                                 // 설명 (선택)
+  date        String                                  // 발행일 (예: "2026.02")
+  thumb       String?                                 // 썸네일 이미지 경로 (선택)
+  link        String?                                 // 외부 링크 (선택)
+  tags        String                                  // 태그 목록 (JSON 배열 문자열로 저장)
+  createdAt   DateTime @default(now())                // 데이터 생성 시각
+  updatedAt   DateTime @updatedAt                     // 데이터 수정 시각
+
+  @@map("works") // 실제 DB 테이블 이름을 "works"로 지정
+}

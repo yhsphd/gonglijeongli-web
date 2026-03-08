@@ -7,10 +7,10 @@ import swaggerUi from "swagger-ui-express";
 // import YAML from "yamljs";
 import path from "path";
 
-// 라우트 import
 import authRoutes from "./routes/auth";
 import eventsRoutes from "./routes/events";
 import newsRoutes from "./routes/news";
+import worksRoutes from "./routes/works";
 import { env } from "./config/env";
 
 dotenv.config();
@@ -83,6 +83,7 @@ app.use(
 app.use("/api/auth", authRoutes);
 app.use("/api/events", eventsRoutes);
 app.use("/api/news", newsRoutes);
+app.use("/api/works", worksRoutes);
 
 // Swagger Setup
 try {

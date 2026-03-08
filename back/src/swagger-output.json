@@ -668,6 +668,279 @@
           }
         ]
       }
+    },
+    "/api/works/": {
+      "get": {
+        "tags": [
+          "Works"
+        ],
+        "summary": "작품 목록 조회 (페이지네이션)",
+        "description": "",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "description": "페이지 번호",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "페이지당 항목 수",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Works"
+        ],
+        "summary": "새 작품 생성",
+        "description": "",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "description": "작품 데이터",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "title": {
+                  "type": "string",
+                  "example": "Sample Work"
+                },
+                "description": {
+                  "type": "string",
+                  "example": "Sample Description"
+                },
+                "date": {
+                  "type": "string",
+                  "example": "2026.02"
+                },
+                "thumb": {
+                  "type": "string",
+                  "example": "https://example.com/image.jpg"
+                },
+                "link": {
+                  "type": "string",
+                  "example": "https://example.com"
+                },
+                "tags": {
+                  "type": "array",
+                  "example": [
+                    "동방",
+                    "회지"
+                  ],
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "title": {
+                    "example": "any"
+                  },
+                  "description": {
+                    "example": "any"
+                  },
+                  "date": {
+                    "example": "any"
+                  },
+                  "thumb": {
+                    "example": "any"
+                  },
+                  "link": {
+                    "example": "any"
+                  },
+                  "tags": {
+                    "example": "any"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/works/{id}": {
+      "put": {
+        "tags": [
+          "Works"
+        ],
+        "summary": "작품 수정",
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "작품 ID"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "description": "수정할 작품 데이터",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "title": {
+                  "type": "string",
+                  "example": "Updated Work"
+                },
+                "description": {
+                  "type": "string",
+                  "example": "Updated Description"
+                },
+                "date": {
+                  "type": "string",
+                  "example": "2026.03"
+                },
+                "thumb": {
+                  "type": "string",
+                  "example": "https://example.com/updated.jpg"
+                },
+                "link": {
+                  "type": "string",
+                  "example": "https://example.com/updated"
+                },
+                "tags": {
+                  "type": "array",
+                  "example": [
+                    "동방",
+                    "아크릴"
+                  ],
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "title": {
+                    "example": "any"
+                  },
+                  "description": {
+                    "example": "any"
+                  },
+                  "date": {
+                    "example": "any"
+                  },
+                  "thumb": {
+                    "example": "any"
+                  },
+                  "link": {
+                    "example": "any"
+                  },
+                  "tags": {
+                    "example": "any"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Works"
+        ],
+        "summary": "작품 삭제",
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "작품 ID"
+          }
+        ],
+        "responses": {
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ]
+      }
     }
   },
   "components": {
