@@ -31,7 +31,7 @@ const defaultWorks: WorkItem[] = [
     title: "경계의 저편",
     description: "동방 팬북 - 환상향의 경계를 넘어선 이야기",
     date: "2026.02",
-    thumb: "/assets/events/illustar10.png",
+    thumb: "/assets/works/purelove.jpg",
     tags: ["동방", "일러스트북"],
   },
   {
@@ -39,7 +39,7 @@ const defaultWorks: WorkItem[] = [
     title: "환상향 일러스트 컬렉션",
     description: "동방 프로젝트 캐릭터 일러스트 모음집",
     date: "2025.12",
-    thumb: "/assets/events/illustar10.png",
+    thumb: "/assets/works/purelove.jpg",
     tags: ["동방", "일러스트북"],
   },
   {
@@ -47,7 +47,7 @@ const defaultWorks: WorkItem[] = [
     title: "공리와정리 회지 Vol.3",
     description: "서클 정기 회지 제3호",
     date: "2025.08",
-    thumb: "/assets/events/illustar10.png",
+    thumb: "/assets/works/purelove.jpg",
     tags: ["회지"],
   },
   {
@@ -55,7 +55,7 @@ const defaultWorks: WorkItem[] = [
     title: "레이무 & 마리사 아크릴 스탠드",
     description: "동방 프로젝트 아크릴 굿즈 세트",
     date: "2025.08",
-    thumb: "/assets/events/illustar10.png",
+    thumb: "/assets/works/purelove.jpg",
     tags: ["동방", "아크릴"],
   },
   {
@@ -63,7 +63,7 @@ const defaultWorks: WorkItem[] = [
     title: "환상향 엽서 세트",
     description: "동방 캐릭터 일러스트 엽서 12종",
     date: "2025.05",
-    thumb: "/assets/events/illustar10.png",
+    thumb: "/assets/works/purelove.jpg",
     tags: ["동방", "엽서"],
   },
   {
@@ -71,7 +71,7 @@ const defaultWorks: WorkItem[] = [
     title: "요정대전쟁 만화",
     description: "동방 요정대전쟁 팬 만화",
     date: "2025.02",
-    thumb: "/assets/events/illustar10.png",
+    thumb: "/assets/works/purelove.jpg",
     tags: ["동방", "만화"],
   },
   {
@@ -79,7 +79,7 @@ const defaultWorks: WorkItem[] = [
     title: "캐릭터 스티커팩",
     description: "동방 캐릭터 스티커 20종 세트",
     date: "2024.12",
-    thumb: "/assets/events/illustar10.png",
+    thumb: "/assets/works/purelove.jpg",
     tags: ["동방", "스티커"],
   },
   {
@@ -87,7 +87,7 @@ const defaultWorks: WorkItem[] = [
     title: "공리와정리 회지 Vol.2",
     description: "서클 정기 회지 제2호",
     date: "2024.08",
-    thumb: "/assets/events/illustar10.png",
+    thumb: "/assets/works/purelove.jpg",
     tags: ["회지"],
   },
   {
@@ -95,7 +95,7 @@ const defaultWorks: WorkItem[] = [
     title: "사쿠야 아크릴 키링",
     description: "이자요이 사쿠야 아크릴 키링",
     date: "2024.05",
-    thumb: "/assets/events/illustar10.png",
+    thumb: "/assets/works/purelove.jpg",
     tags: ["동방", "아크릴"],
   },
 ];

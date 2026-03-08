@@ -3,7 +3,7 @@
 <template>
   <div class="master-thumb-entry">
     <div class="thumb-wrapper">
-      <img class="thumb" src="/assets/events/illustar10.png" />
+      <img class="thumb" src="/assets/works/purelove.jpg" />
     </div>
     <div class="text-content">
       <p class="title">일러스타 페스 10</p>
