@@ -38,7 +38,11 @@ onUnmounted(() => {
     <AppHeader class="header" />
     <div class="main">
       <div class="content">
-        <RouterView />
+        <router-view v-slot="{ Component }">
+          <transition name="fade" mode="out-in">
+            <component :is="Component" />
+          </transition>
+        </router-view>
       </div>
       <AppFooter />
     </div>
@@ -106,5 +110,15 @@ onUnmounted(() => {
   width: 100vw;
   z-index: var(--z-background);
   filter: var(--blur-md);
+}
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
 }
 </style>

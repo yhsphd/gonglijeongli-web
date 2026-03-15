@@ -161,29 +161,33 @@ const handleCardClick = (event: EventItem) => {
       description="동방 프로젝트 서클 공리와정리가 참가하는 행사 일정을 안내합니다."
     />
 
-    <div class="events-grid">
-      <ContentCard
-        v-for="event in eventItems"
+    <TransitionGroup name="list" tag="div" class="events-grid">
+      <div
+        v-for="(event, index) in eventItems"
         :key="event.id"
-        :thumb="event.thumb || undefined"
-        :alt="event.title"
-        :has-link="!!event.link"
-        :class="`status-${event.status}`"
-        @click="handleCardClick(event)"
+        :style="{ '--delay': `${index * 0.05}s` }"
       >
-        <template #overlay>
-          <span class="status-badge" :class="event.status">{{ getStatusLabel(event.status) }}</span>
-          <CardActions
-            v-if="authStore.isAdmin"
-            @edit="openEditModal(event)"
-            @delete="handleDelete(event.id)"
-          />
-        </template>
-        <h3 class="card-title">{{ event.title }}</h3>
-        <p class="card-date">{{ event.date }}</p>
-        <p class="card-location">{{ event.location }}</p>
-      </ContentCard>
-    </div>
+        <ContentCard
+          :thumb="event.thumb || undefined"
+          :alt="event.title"
+          :has-link="!!event.link"
+          :class="`status-${event.status}`"
+          @click="handleCardClick(event)"
+        >
+          <template #overlay>
+            <span class="status-badge" :class="event.status">{{ getStatusLabel(event.status) }}</span>
+            <CardActions
+              v-if="authStore.isAdmin"
+              @edit="openEditModal(event)"
+              @delete="handleDelete(event.id)"
+            />
+          </template>
+          <h3 class="card-title">{{ event.title }}</h3>
+          <p class="card-date">{{ event.date }}</p>
+          <p class="card-location">{{ event.location }}</p>
+        </ContentCard>
+      </div>
+    </TransitionGroup>
 
     <!-- Pagination -->
     <AppPagination v-model:current-page="currentPage" :total-pages="totalPages">
@@ -254,6 +258,14 @@ const handleCardClick = (event: EventItem) => {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: var(--spacing-md);
+}
+
+.events-grid > div {
+  display: flex;
+}
+
+.events-grid > div :deep(.content-card) {
+  flex: 1;
 }
 
 /* Event Card - status-ended styling via ContentCard */
@@ -375,5 +387,20 @@ const handleCardClick = (event: EventItem) => {
 .form-group select:focus {
   outline: none;
   border-color: var(--color-text-primary);
+}
+
+/* List Transition */
+.list-enter-active {
+  transition: all 0.5s ease;
+  transition-delay: var(--delay);
+}
+
+.list-enter-from {
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+.list-move {
+  transition: transform 0.5s ease;
 }
 </style>

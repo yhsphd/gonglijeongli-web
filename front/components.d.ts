@@ -21,6 +21,7 @@ declare module 'vue' {
     GalleryCarousel: typeof import('./src/components/home/GalleryCarousel.vue')['default']
     HeroCarousel: typeof import('./src/components/home/HeroCarousel.vue')['default']
     ListBox: typeof import('./src/components/home/ListBox.vue')['default']
+    NewsTableRow: typeof import('./src/components/news/NewsTableRow.vue')['default']
     PageHeader: typeof import('./src/components/common/PageHeader.vue')['default']
     PostEntry: typeof import('./src/components/home/PostEntry.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']

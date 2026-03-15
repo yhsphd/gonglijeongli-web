@@ -38,6 +38,11 @@ const defaultGallery: GalleryItem[] = [
 
 // 갤러리 아이템
 const galleryItems = ref<GalleryItem[]>([]);
+const loadedImages = ref<Set<number>>(new Set());
+
+const handleImageLoad = (id: number) => {
+  loadedImages.value.add(id);
+};
 
 // 무한 스크롤 관련
 const displayedCount = ref(12);
@@ -160,7 +165,13 @@ const openOriginal = (item: GalleryItem) => {
         class="masonry-item"
         @click="openLightbox(index)"
       >
-        <img :src="item.src" alt="" loading="lazy" />
+        <img
+          :src="item.src"
+          alt=""
+          loading="lazy"
+          :class="{ loaded: loadedImages.has(item.id) }"
+          @load="handleImageLoad(item.id)"
+        />
         <div v-if="isAdmin" class="item-actions">
           <button
             class="btn-action-item btn-delete"
@@ -264,7 +275,12 @@ const openOriginal = (item: GalleryItem) => {
 .masonry-item img {
   width: 100%;
   display: block;
-  transition: transform 0.3s ease;
+  opacity: 0;
+  transition: transform 0.3s ease, opacity 0.5s ease;
+}
+
+.masonry-item img.loaded {
+  opacity: 1;
 }
 
 .masonry-item:hover img {

@@ -208,26 +208,30 @@ const handleCardClick = (work: WorkItem) => {
     </div>
 
     <!-- 작품 그리드 -->
-    <div class="works-grid">
-      <ContentCard
-        v-for="work in filteredItems"
+    <TransitionGroup name="list" tag="div" class="works-grid">
+      <div
+        v-for="(work, index) in filteredItems"
         :key="work.id"
-        :thumb="work.thumb || undefined"
-        :alt="work.title"
-        :has-link="!!work.link"
-        @click="handleCardClick(work)"
+        :style="{ '--delay': `${index * 0.05}s` }"
       >
-        <template #overlay>
-          <CardActions v-if="isAdmin" @edit="openEditModal(work)" @delete="handleDelete(work.id)" />
-        </template>
-        <div class="card-tags">
-          <span v-for="tag in work.tags" :key="tag" class="tag">{{ tag }}</span>
-        </div>
-        <h3 class="card-title">{{ work.title }}</h3>
-        <p v-if="work.description" class="card-description">{{ work.description }}</p>
-        <p class="card-date">{{ work.date }}</p>
-      </ContentCard>
-    </div>
+        <ContentCard
+          :thumb="work.thumb || undefined"
+          :alt="work.title"
+          :has-link="!!work.link"
+          @click="handleCardClick(work)"
+        >
+          <template #overlay>
+            <CardActions v-if="isAdmin" @edit="openEditModal(work)" @delete="handleDelete(work.id)" />
+          </template>
+          <div class="card-tags">
+            <span v-for="tag in work.tags" :key="tag" class="tag">{{ tag }}</span>
+          </div>
+          <h3 class="card-title">{{ work.title }}</h3>
+          <p v-if="work.description" class="card-description">{{ work.description }}</p>
+          <p class="card-date">{{ work.date }}</p>
+        </ContentCard>
+      </div>
+    </TransitionGroup>
 
     <!-- 결과 없음 -->
     <div v-if="filteredItems.length === 0" class="no-results">
@@ -353,6 +357,14 @@ const handleCardClick = (work: WorkItem) => {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: var(--spacing-md);
+}
+
+.works-grid > div {
+  display: flex;
+}
+
+.works-grid > div :deep(.content-card) {
+  flex: 1;
 }
 
 /* Card Content */
@@ -481,5 +493,20 @@ const handleCardClick = (work: WorkItem) => {
   background: var(--color-text-primary);
   color: var(--color-text-inverse);
   border-color: var(--color-text-primary);
+}
+
+/* List Transition */
+.list-enter-active {
+  transition: all 0.5s ease;
+  transition-delay: var(--delay);
+}
+
+.list-enter-from {
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+.list-move {
+  transition: transform 0.5s ease;
 }
 </style>

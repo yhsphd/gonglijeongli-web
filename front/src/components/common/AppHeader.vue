@@ -1,5 +1,8 @@
 <script setup lang="ts">
-import { RouterLink } from "vue-router";
+import { computed } from "vue";
+import { RouterLink, useRoute } from "vue-router";
+
+const route = useRoute();
 
 const menus = [
   { label: ["소개", "About"], to: "/about" },
@@ -8,6 +11,16 @@ const menus = [
   { label: ["작품", "Works"], to: "/works" },
   { label: ["갤러리", "Gallery"], to: "/gallery" },
 ];
+
+const currentPath = computed(() => route.path);
+
+const isMenuActive = (menuPath: string) => {
+  return (
+    currentPath.value === menuPath ||
+    currentPath.value.startsWith(`${menuPath}/`) ||
+    currentPath.value.startsWith(`${menuPath}?`)
+  );
+};
 </script>
 
 <template>
@@ -18,7 +31,13 @@ const menus = [
         <img src="@/assets/img/logo.svg" />
       </RouterLink>
       <div class="flex-grow"></div>
-      <RouterLink class="nav" v-for="(menu, i) in menus" :key="i" :to="menu.to">
+      <RouterLink
+        class="nav"
+        :class="{ 'is-active': isMenuActive(menu.to) }"
+        v-for="(menu, i) in menus"
+        :key="i"
+        :to="menu.to"
+      >
         <span class="nav-label">{{ menu.label[0] }}</span>
         <span class="nav-indicator"></span>
         <span class="nav-label-en">{{ menu.label[1] }}</span>
@@ -119,17 +138,20 @@ const menus = [
 }
 
 /* Active 상태 (현재 페이지) */
-.nav.router-link-active {
+.nav.router-link-active,
+.nav.is-active {
   opacity: 1;
   gap: var(--spacing-xs);
   font-weight: bold;
 }
 
 .nav:hover .nav-indicator,
-.nav.router-link-active .nav-indicator {
+.nav.router-link-active .nav-indicator,
+.nav.is-active .nav-indicator {
   opacity: 1;
 }
-.nav.router-link-active .nav-indicator::after {
+.nav.router-link-active .nav-indicator::after,
+.nav.is-active .nav-indicator::after {
   width: 5rem;
 }
 </style>
