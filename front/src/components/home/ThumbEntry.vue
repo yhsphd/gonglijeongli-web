@@ -1,13 +1,19 @@
-<script setup lang="ts"></script>
+<script setup lang="ts">
+defineProps<{
+  title: string;
+  date: string;
+  thumb?: string;
+}>();
+</script>
 
 <template>
   <div class="master-thumb-entry">
     <div class="thumb-wrapper">
-      <img class="thumb" src="/assets/works/purelove.jpg" />
+      <img v-if="thumb" class="thumb" :src="thumb" :alt="title" />
     </div>
     <div class="text-content">
-      <p class="title">일러스타 페스 10</p>
-      <p class="date">2026.02.21.</p>
+      <p class="title">{{ title }}</p>
+      <p class="date">{{ date }}</p>
     </div>
   </div>
 </template>

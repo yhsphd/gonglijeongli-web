@@ -1,18 +1,28 @@
-<script setup lang="ts"></script>
+<script setup lang="ts">
+withDefaults(
+  defineProps<{
+    title: string;
+    date: string;
+    text?: string;
+    thumb?: string;
+  }>(),
+  {
+    text: "",
+    thumb: "",
+  }
+);
+</script>
 
 <template>
   <div class="master-post-entry">
     <div class="content">
       <div class="thumb-wrapper">
-        <img class="thumb" src="/assets/news/hijiri.png" />
+        <img v-if="thumb" class="thumb" :src="thumb" :alt="title" />
       </div>
       <div class="text-content">
-        <p class="title">[행사 공지] 미래세기로의 초대장 부스 안내</p>
-        <p class="date">2026.02.10.</p>
-        <p class="text">
-          안녕하세요 동방프로젝트 서클 공리와정리입니다. 2026.01.26에 개최되는 미래세기로의
-          초대장에서 부스로 찾아뵙게 되었습니다!
-        </p>
+        <p class="title">{{ title }}</p>
+        <p class="date">{{ date }}</p>
+        <p v-if="text" class="text">{{ text }}</p>
       </div>
     </div>
   </div>
