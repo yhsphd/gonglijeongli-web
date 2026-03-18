@@ -2,6 +2,7 @@
 import { ref, onMounted } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import TiptapEditor from "@/components/common/TiptapEditor.vue";
+import ImageUpload from "@/components/common/ImageUpload.vue";
 import { createNews, updateNews, fetchNewsDetail } from "@/api/news";
 
 const router = useRouter();
@@ -119,16 +120,9 @@ const handleCancel = () => {
         />
       </div>
 
-      <!-- 썸네일 URL -->
+      <!-- 썸네일 이미지 -->
       <div class="form-group">
-        <label for="thumbnail" class="form-label">썸네일 이미지 URL (선택)</label>
-        <input
-          id="thumbnail"
-          v-model="thumbnail"
-          type="text"
-          class="form-input"
-          placeholder="/assets/news/example.png"
-        />
+        <ImageUpload v-model="thumbnail" label="썸네일 이미지 (선택)" />
       </div>
 
       <!-- 에디터 -->

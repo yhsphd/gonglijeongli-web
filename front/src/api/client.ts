@@ -68,3 +68,32 @@ export class ApiError extends Error {
     this.name = "ApiError";
   }
 }
+
+/**
+ * 이미지 파일 업로드 함수
+ *
+ * FormData를 사용하므로 Content-Type 헤더를 직접 지정하지 않습니다.
+ * (브라우저가 multipart/form-data + boundary를 자동으로 설정)
+ *
+ * 사용 예:
+ *   const { url } = await uploadFile(file);
+ */
+export async function uploadFile(file: File): Promise<{ url: string }> {
+  const formData = new FormData();
+  formData.append("image", file);
+
+  const response = await fetch(`${API_BASE}/upload`, {
+    method: "POST",
+    credentials: "include",
+    body: formData,
+    // Content-Type 헤더를 명시하지 않음 (브라우저가 자동 설정)
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new ApiError(response.status, data.message || "파일 업로드에 실패했습니다.");
+  }
+
+  return data as { url: string };
+}

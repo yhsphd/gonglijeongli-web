@@ -941,6 +941,25 @@
           }
         ]
       }
+    },
+    "/api/upload/": {
+      "post": {
+        "tags": [
+          "Upload"
+        ],
+        "summary": "이미지 업로드 (관리자)",
+        "description": "",
+        "responses": {
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ]
+      }
     }
   },
   "components": {

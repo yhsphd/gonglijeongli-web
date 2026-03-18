@@ -6,6 +6,7 @@ import AdminModal from "@/components/common/AdminModal.vue";
 import FormInput from "@/components/common/FormInput.vue";
 import CardActions from "@/components/common/CardActions.vue";
 import ContentCard from "@/components/common/ContentCard.vue";
+import ImageUpload from "@/components/common/ImageUpload.vue";
 import { useAuthStore } from "@/stores/auth";
 import {
   fetchWorks,
@@ -18,7 +19,6 @@ import {
 
 // 인증 스토어
 const authStore = useAuthStore();
-const isAdmin = computed(() => authStore.isAdmin);
 
 // 작품 목록 상태
 const workItems = ref<WorkItem[]>([]);
@@ -221,7 +221,7 @@ const handleCardClick = (work: WorkItem) => {
           @click="handleCardClick(work)"
         >
           <template #overlay>
-            <CardActions v-if="isAdmin" @edit="openEditModal(work)" @delete="handleDelete(work.id)" />
+            <CardActions v-if="authStore.isAdmin" @edit="openEditModal(work)" @delete="handleDelete(work.id)" />
           </template>
           <div class="card-tags">
             <span v-for="tag in work.tags" :key="tag" class="tag">{{ tag }}</span>
@@ -245,7 +245,7 @@ const handleCardClick = (work: WorkItem) => {
       :total-pages="totalPages"
     >
       <template #right>
-        <button v-if="isAdmin" class="btn-write" @click="openAddModal">작품 추가</button>
+        <button v-if="authStore.isAdmin" class="btn-write" @click="openAddModal">작품 추가</button>
       </template>
     </AppPagination>
 
@@ -269,10 +269,9 @@ const handleCardClick = (work: WorkItem) => {
         placeholder="작품에 대한 간단한 설명"
       />
       <FormInput v-model="formData.date" label="발행일" placeholder="예: 2026.02" required />
-      <FormInput
+      <ImageUpload
         v-model="formData.thumb"
-        label="썸네일 URL"
-        placeholder="/assets/works/example.png"
+        label="썸네일 이미지"
       />
       <FormInput v-model="formData.link" label="연결 링크" placeholder="https://example.com/work" />
       <div class="form-group">

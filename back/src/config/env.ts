@@ -12,6 +12,9 @@ const envSchema = z.object({
   ADMIN_USERNAME: z.string(),
   ADMIN_PASSWORD: z.string(),
   DATABASE_URL: z.string(),
+  // 이미지 업로드 저장 디렉터리 (절대경로 또는 상대경로)
+  // 프로덕션: OCI 영구 볼륨 경로, 개발: back/uploads/
+  UPLOAD_DIR: z.string().default(""),
 });
 
 const _env = envSchema.safeParse(process.env);

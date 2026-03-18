@@ -4,13 +4,13 @@ import dotenv from "dotenv";
 import session from "express-session";
 import fs from "fs";
 import swaggerUi from "swagger-ui-express";
-// import YAML from "yamljs";
 import path from "path";
 
 import authRoutes from "./routes/auth";
 import eventsRoutes from "./routes/events";
 import newsRoutes from "./routes/news";
 import worksRoutes from "./routes/works";
+import uploadRoutes, { UPLOADS_DIR } from "./routes/upload";
 import { env } from "./config/env";
 
 dotenv.config();
@@ -84,6 +84,12 @@ app.use("/api/auth", authRoutes);
 app.use("/api/events", eventsRoutes);
 app.use("/api/news", newsRoutes);
 app.use("/api/works", worksRoutes);
+app.use("/api/upload", uploadRoutes);
+
+// ─── 정적 파일 서빙 ───
+// 업로드된 이미지 파일을 /uploads URL로 접근 가능하게 합니다.
+// UPLOADS_DIR는 UPLOAD_DIR 환경변수를 우선하며, 없으면 back/uploads/ 사용.
+app.use("/uploads", express.static(UPLOADS_DIR));
 
 // Swagger Setup
 try {

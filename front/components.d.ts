@@ -20,6 +20,7 @@ declare module 'vue' {
     FormInput: typeof import('./src/components/common/FormInput.vue')['default']
     GalleryCarousel: typeof import('./src/components/home/GalleryCarousel.vue')['default']
     HeroCarousel: typeof import('./src/components/home/HeroCarousel.vue')['default']
+    ImageUpload: typeof import('./src/components/common/ImageUpload.vue')['default']
     ListBox: typeof import('./src/components/home/ListBox.vue')['default']
     NewsTableRow: typeof import('./src/components/news/NewsTableRow.vue')['default']
     PageHeader: typeof import('./src/components/common/PageHeader.vue')['default']

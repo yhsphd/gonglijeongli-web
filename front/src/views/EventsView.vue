@@ -6,6 +6,7 @@ import AdminModal from "@/components/common/AdminModal.vue";
 import FormInput from "@/components/common/FormInput.vue";
 import CardActions from "@/components/common/CardActions.vue";
 import ContentCard from "@/components/common/ContentCard.vue";
+import ImageUpload from "@/components/common/ImageUpload.vue";
 import { useAuthStore } from "@/stores/auth";
 import {
   fetchEvents,
@@ -224,10 +225,9 @@ const handleCardClick = (event: EventItem) => {
         placeholder="행사 장소를 입력하세요"
         required
       />
-      <FormInput
+      <ImageUpload
         v-model="formData.thumb"
-        label="썸네일 URL"
-        placeholder="/assets/events/example.png"
+        label="썸네일 이미지"
       />
       <FormInput
         v-model="formData.link"

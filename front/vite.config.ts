@@ -47,6 +47,11 @@ export default defineConfig({
         target: "http://localhost:3000",
         changeOrigin: true,
       },
+      // /uploads/* 요청도 백엔드 서버로 프록시 (업로드된 이미지 파일 서빙)
+      "/uploads": {
+        target: "http://localhost:3000",
+        changeOrigin: true,
+      },
     },
   },
   preview: {

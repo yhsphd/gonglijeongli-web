@@ -39,3 +39,6 @@ coverage
 # SQLite database files
 *.db
 *.db-journal
+
+# 업로드 이미지
+uploads/
