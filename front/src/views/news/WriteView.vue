@@ -10,6 +10,13 @@ const route = useRoute();
 
 const editId = ref<number | null>(null);
 
+// 초기 상태 저장
+const initialState = ref({
+  title: "",
+  content: { type: "doc", content: [{ type: "paragraph" }] },
+  thumbnail: "",
+});
+
 // 폼 데이터
 const title = ref("");
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -39,17 +46,39 @@ onMounted(async () => {
             console.error("Content parsing error", e);
           }
         }
+        // 초기 상태 저장
+        initialState.value = {
+          title: title.value,
+          content: JSON.parse(JSON.stringify(content.value)), // deep copy
+          thumbnail: thumbnail.value,
+        };
       } catch (error) {
         console.error("뉴스 상세 로드 실패:", error);
         alert("글 정보를 불러오는데 실패했습니다.");
-        router.push({ name: "news" });
+        router.back();
       }
     }
+  } else {
+    // 창작 모드일 때도 초기 상태 설정
+    initialState.value = {
+      title: "",
+      content: { type: "doc", content: [{ type: "paragraph" }] },
+      thumbnail: "",
+    };
   }
 });
 
 // 저장 처리
 const isSubmitting = ref(false);
+
+// 내용이 변경되었는지 확인
+const hasChanged = () => {
+  return (
+    title.value !== initialState.value.title ||
+    JSON.stringify(content.value) !== JSON.stringify(initialState.value.content) ||
+    thumbnail.value !== initialState.value.thumbnail
+  );
+};
 
 const handleSubmit = async () => {
   if (!title.value.trim()) {
@@ -88,15 +117,12 @@ const handleSubmit = async () => {
 };
 
 const handleCancel = () => {
-  if (
-    title.value.trim() ||
-    JSON.stringify(content.value) !== '{"type":"doc","content":[{"type":"paragraph"}]}'
-  ) {
-    if (!confirm("작성 중인 내용이 있습니다. 정말 취소하시겠습니까?")) {
+  if (hasChanged()) {
+    if (!confirm("내용이 변경되었습니다. 정말 취소하시겠습니까?")) {
       return;
     }
   }
-  router.push({ name: "news" });
+  router.back();
 };
 </script>
 

@@ -73,6 +73,11 @@ const handleDelete = async () => {
   }
 };
 
+// 수정 처리
+const handleEdit = () => {
+  router.push({ name: "news-write", query: { edit: postId.value } });
+};
+
 // 목록으로 돌아가기
 const goBack = () => {
   router.push({ name: "news" });
@@ -124,6 +129,7 @@ onMounted(() => {
         </div>
         <div class="actions-right">
           <button v-if="isAdmin" class="btn btn-delete" @click="handleDelete">삭제</button>
+          <button v-if="isAdmin" class="btn btn-edit" @click="handleEdit">수정</button>
           <button class="btn btn-list" @click="goBack">목록</button>
         </div>
       </div>
@@ -230,6 +236,17 @@ onMounted(() => {
 
 .btn-like:hover {
   background: var(--color-like);
+  color: var(--color-text-inverse);
+}
+
+.btn-edit {
+  border-color: var(--color-info);
+  color: var(--color-info);
+}
+
+.btn-edit:hover {
+  border-color: var(--color-info);
+  background: var(--color-info);
   color: var(--color-text-inverse);
 }
 

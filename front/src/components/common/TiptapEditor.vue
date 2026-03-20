@@ -1,23 +1,9 @@
 <script setup lang="ts">
 import { useEditor, EditorContent } from "@tiptap/vue-3";
-import StarterKit from "@tiptap/starter-kit";
-import Underline from "@tiptap/extension-underline";
-import Link from "@tiptap/extension-link";
-import Image from "@tiptap/extension-image";
-import TextAlign from "@tiptap/extension-text-align";
-import { TextStyle } from "@tiptap/extension-text-style";
-import Color from "@tiptap/extension-color";
-import Placeholder from "@tiptap/extension-placeholder";
-import { Table } from "@tiptap/extension-table";
-import TableRow from "@tiptap/extension-table-row";
-import TableCell from "@tiptap/extension-table-cell";
-import TableHeader from "@tiptap/extension-table-header";
-import CodeBlockLowlight from "@tiptap/extension-code-block-lowlight";
-import FileHandler from "@tiptap/extension-file-handler";
-import { NodeSelection } from "@tiptap/pm/state";
-import { common, createLowlight } from "lowlight";
 import { watch, onBeforeUnmount, ref } from "vue";
-import { uploadFile } from "@/api/client";
+import ImageUploadDialog from "./ImageUploadDialog.vue";
+import { useImageDragDrop } from "@/composables/useImageDragDrop";
+import { getEditorExtensions } from "@/composables/useEditorExtensions";
 
 const props = defineProps<{
   modelValue: object;
@@ -28,195 +14,26 @@ const emit = defineEmits<{
   "update:modelValue": [value: object];
 }>();
 
-const lowlight = createLowlight(common);
+// Composables 사용
+const { dragHandlers } = useImageDragDrop();
+const extensions = getEditorExtensions(props.placeholder);
 
-type InternalImageDragState = {
-  from: number;
-  to: number;
-  nodeJSON: Record<string, unknown>;
-};
-
-const internalImageDragState = ref<InternalImageDragState | null>(null);
+// 이미지 다이얼로그 상태
+const imageDialogOpen = ref(false);
 
 const editor = useEditor({
   content: props.modelValue,
   editorProps: {
     handleDOMEvents: {
-      dragstart: (view, event) => {
-        const target = event.target as HTMLElement | null;
-
-        if (target?.closest("[data-node='image'], [data-resize-container], img.editor-image")) {
-          const imageNodeElement = target.closest("[data-node='image']") as HTMLElement | null;
-          const imagePos = imageNodeElement ? view.posAtDOM(imageNodeElement, 0) : null;
-
-          if (imagePos != null) {
-            const maybeImageNode = view.state.doc.nodeAt(imagePos);
-
-            if (maybeImageNode?.type.name === "image") {
-              view.dispatch(view.state.tr.setSelection(NodeSelection.create(view.state.doc, imagePos)));
-
-              internalImageDragState.value = {
-                from: imagePos,
-                to: imagePos + maybeImageNode.nodeSize,
-                nodeJSON: maybeImageNode.toJSON(),
-              };
-            }
-          }
-
-          event.dataTransfer?.setData("application/x-editor-image-drag", "1");
-
-          if (event.dataTransfer) {
-            event.dataTransfer.effectAllowed = "move";
-            event.dataTransfer.dropEffect = "move";
-          }
-
-          return false;
-        }
-
-        return false;
-      },
+      dragstart: dragHandlers.dragstart,
       drop: (view, event) => {
-        const isInternalImageDrag =
-          event.dataTransfer?.types.includes("application/x-editor-image-drag") ?? false;
-
-        if (!isInternalImageDrag || !internalImageDragState.value) {
-          return false;
-        }
-
-        event.preventDefault();
-
-        const currentEditor = editor.value;
-        const dropPos = view.posAtCoords({ left: event.clientX, top: event.clientY })?.pos;
-
-        if (!currentEditor || dropPos == null) {
-          internalImageDragState.value = null;
-          return true;
-        }
-
-        const { from, to, nodeJSON } = internalImageDragState.value;
-
-        // Dropping inside the source range should be a no-op to avoid jitter and accidental duplicate paths.
-        if (dropPos >= from && dropPos <= to) {
-          internalImageDragState.value = null;
-          return true;
-        }
-
-        // If the original source node no longer matches, abort safely.
-        const sourceNodeNow = currentEditor.state.doc.nodeAt(from);
-        if (!sourceNodeNow || sourceNodeNow.type.name !== "image") {
-          internalImageDragState.value = null;
-          return true;
-        }
-
-        const nodeSize = to - from;
-        const rawDropPos = dropPos > from ? Math.max(from, dropPos - nodeSize) : dropPos;
-        const adjustedDropPos = Math.max(0, Math.min(rawDropPos, currentEditor.state.doc.content.size));
-        const imageNode = currentEditor.state.schema.nodeFromJSON(nodeJSON);
-
-        const tr = currentEditor.state.tr
-          .delete(from, to)
-          .insert(adjustedDropPos, imageNode);
-
-        tr.setSelection(NodeSelection.create(tr.doc, adjustedDropPos)).scrollIntoView();
-
-        view.dispatch(tr);
-        internalImageDragState.value = null;
-
-        return true;
+        return dragHandlers.drop(view, event, editor.value || null);
       },
-      dragover: (_view, event) => {
-        const isInternalImageDrag =
-          event.dataTransfer?.types.includes("application/x-editor-image-drag") ?? false;
-
-        if (!isInternalImageDrag) {
-          return false;
-        }
-
-        event.preventDefault();
-
-        if (event.dataTransfer) {
-          event.dataTransfer.dropEffect = "move";
-        }
-
-        return true;
-      },
-      dragend: () => {
-        internalImageDragState.value = null;
-        return false;
-      },
+      dragover: dragHandlers.dragover,
+      dragend: dragHandlers.dragend,
     },
   },
-  extensions: [
-    StarterKit.configure({
-      codeBlock: false, // CodeBlockLowlight로 대체
-    }),
-    Underline,
-    Link.configure({
-      openOnClick: false,
-      HTMLAttributes: {
-        class: "editor-link",
-      },
-    }),
-    Image.configure({
-      inline: true,
-      HTMLAttributes: {
-        class: "editor-image",
-        draggable: "true",
-      },
-      resize: {
-        enabled: true,
-        directions: ["bottom-right"],
-        minWidth: 80,
-        minHeight: 50,
-        alwaysPreserveAspectRatio: true,
-      },
-    }),
-    TextAlign.configure({
-      types: ["heading", "paragraph"],
-    }),
-    TextStyle,
-    Color,
-    Placeholder.configure({
-      placeholder: props.placeholder || "내용을 입력하세요...",
-    }),
-    Table.configure({
-      resizable: true,
-    }),
-    TableRow,
-    TableCell,
-    TableHeader,
-    CodeBlockLowlight.configure({
-      lowlight,
-    }),
-    FileHandler.configure({
-      allowedMimeTypes: ["image/jpeg", "image/png", "image/webp", "image/gif"],
-      onDrop: async (currentEditor, files, _pos) => {
-        for (const file of files) {
-          try {
-            const { url } = await uploadFile(file);
-            currentEditor.chain().insertContentAt(_pos, {
-              type: "image",
-              attrs: { src: url },
-            }).focus().run();
-          } catch (error) {
-            console.error("이미지 드롭 업로드 실패:", error);
-            alert("이미지 업로드에 실패했습니다.");
-          }
-        }
-      },
-      onPaste: async (currentEditor, files) => {
-        for (const file of files) {
-          try {
-            const { url } = await uploadFile(file);
-            currentEditor.chain().focus().setImage({ src: url }).run();
-          } catch (error) {
-            console.error("이미지 붙여넣기 업로드 실패:", error);
-            alert("이미지 업로드에 실패했습니다.");
-          }
-        }
-      },
-    }),
-  ],
+  extensions,
   onUpdate: () => {
     emit("update:modelValue", editor.value?.getJSON() || {});
   },
@@ -251,54 +68,8 @@ const setLink = () => {
   editor.value?.chain().focus().extendMarkRange("link").setLink({ href: url }).run();
 };
 
-// ── 이미지 삽입 다이얼로그 상태 ──
-const imageDialogOpen = ref(false);
-const imageDialogTab = ref<"upload" | "url">("upload");
-const imageUrlInput = ref("");
-const imageFileInput = ref<HTMLInputElement | null>(null);
-const isImageUploading = ref(false);
-const imageUploadError = ref("");
-
-const openImageDialog = () => {
-  imageDialogOpen.value = true;
-  imageDialogTab.value = "upload";
-  imageUrlInput.value = "";
-  imageUploadError.value = "";
-};
-
-const closeImageDialog = () => {
-  imageDialogOpen.value = false;
-};
-
-const insertImageUrl = (url: string) => {
-  if (!url.trim()) return;
-  editor.value?.chain().focus().setImage({ src: url.trim() }).run();
-  closeImageDialog();
-};
-
-const handleImageFileChange = async (event: Event) => {
-  const input = event.target as HTMLInputElement;
-  const file = input.files?.[0];
-  if (!file) return;
-
-  isImageUploading.value = true;
-  imageUploadError.value = "";
-
-  try {
-    const { url } = await uploadFile(file);
-    insertImageUrl(url);
-  } catch (error) {
-    imageUploadError.value =
-      error instanceof Error ? error.message : "업로드에 실패했습니다.";
-  } finally {
-    isImageUploading.value = false;
-    input.value = "";
-  }
-};
-
-// 기존 addImage는 다이얼로그를 열도록 대체
 const addImage = () => {
-  openImageDialog();
+  imageDialogOpen.value = true;
 };
 
 const setColor = (event: Event) => {
@@ -547,73 +318,8 @@ const insertTable = () => {
     <!-- Editor Content -->
     <EditorContent :editor="editor" class="editor-content" />
 
-    <!-- 이미지 삽입 다이얼로그 -->
-    <Teleport to="body">
-      <div v-if="imageDialogOpen" class="img-dialog-overlay" @click.self="closeImageDialog">
-        <div class="img-dialog">
-          <div class="img-dialog-header">
-            <span>이미지 삽입</span>
-            <button type="button" class="img-dialog-close" @click="closeImageDialog">✕</button>
-          </div>
-
-          <!-- 탭 -->
-          <div class="img-dialog-tabs">
-            <button
-              type="button"
-              class="img-tab-btn"
-              :class="{ active: imageDialogTab === 'upload' }"
-              @click="imageDialogTab = 'upload'; imageUploadError = ''"
-            >파일 업로드</button>
-            <button
-              type="button"
-              class="img-tab-btn"
-              :class="{ active: imageDialogTab === 'url' }"
-              @click="imageDialogTab = 'url'; imageUploadError = ''"
-            >URL 입력</button>
-          </div>
-
-          <!-- 파일 업로드 탭 -->
-          <div v-if="imageDialogTab === 'upload'" class="img-dialog-body">
-            <input
-              ref="imageFileInput"
-              type="file"
-              accept="image/jpeg,image/png,image/webp,image/gif"
-              class="img-file-input"
-              @change="handleImageFileChange"
-            />
-            <button
-              type="button"
-              class="img-btn-select"
-              :disabled="isImageUploading"
-              @click="imageFileInput?.click()"
-            >
-              <span v-if="isImageUploading" class="img-spinner" />
-              {{ isImageUploading ? '업로드 중...' : '파일 선택' }}
-            </button>
-            <span class="img-hint">JPG, PNG, WEBP, GIF (최대 5MB)</span>
-          </div>
-
-          <!-- URL 입력 탭 -->
-          <div v-if="imageDialogTab === 'url'" class="img-dialog-body">
-            <div class="img-url-row">
-              <input
-                v-model="imageUrlInput"
-                type="text"
-                class="img-url-input"
-                placeholder="https://example.com/image.jpg"
-                @keydown.enter.prevent="insertImageUrl(imageUrlInput)"
-              />
-              <button type="button" class="img-btn-apply" @click="insertImageUrl(imageUrlInput)">
-                삽입
-              </button>
-            </div>
-          </div>
-
-          <!-- 에러 -->
-          <p v-if="imageUploadError" class="img-error">{{ imageUploadError }}</p>
-        </div>
-      </div>
-    </Teleport>
+    <!-- 이미지 삽입 다이얼로그 (분리된 컴포넌트) -->
+    <ImageUploadDialog v-model="imageDialogOpen" :editor="editor" />
   </div>
 </template>
 
@@ -840,171 +546,5 @@ const insertTable = () => {
 
 .editor-content :deep(.tiptap .selectedCell) {
   background: rgba(0, 100, 200, 0.1);
-}
-/* 이미지 삽입 다이얼로그 */
-.img-dialog-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 9999;
-}
-
-.img-dialog {
-  background: var(--color-bg-primary);
-  border: 1px solid var(--color-border);
-  padding: var(--spacing-md);
-  width: 420px;
-  max-width: 90vw;
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-sm);
-}
-
-.img-dialog-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-bold);
-  color: var(--color-text-primary);
-}
-
-.img-dialog-close {
-  border: none;
-  background: none;
-  color: var(--color-text-muted);
-  font-size: var(--font-size-base);
-  cursor: pointer;
-  padding: 0;
-  line-height: 1;
-}
-
-.img-dialog-close:hover {
-  color: var(--color-text-primary);
-}
-
-.img-dialog-tabs {
-  display: flex;
-  border-bottom: 1px solid var(--color-border);
-}
-
-.img-tab-btn {
-  padding: var(--spacing-xs) var(--spacing-sm);
-  border: none;
-  border-bottom: 2px solid transparent;
-  background: none;
-  color: var(--color-text-muted);
-  font-family: var(--font-family-base);
-  font-size: var(--font-size-xs);
-  cursor: pointer;
-  margin-bottom: -1px;
-  transition: all 0.15s;
-}
-
-.img-tab-btn.active {
-  color: var(--color-text-primary);
-  border-bottom-color: var(--color-text-primary);
-  font-weight: var(--font-weight-bold);
-}
-
-.img-dialog-body {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-sm);
-  padding-top: var(--spacing-xs);
-}
-
-.img-file-input {
-  display: none;
-}
-
-.img-btn-select {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-xs);
-  padding: var(--spacing-sm) var(--spacing-md);
-  border: 1px solid var(--color-border);
-  background: var(--color-bg-primary);
-  color: var(--color-text-primary);
-  font-family: var(--font-family-base);
-  font-size: var(--font-size-sm);
-  cursor: pointer;
-  transition: all 0.2s;
-  white-space: nowrap;
-}
-
-.img-btn-select:hover:not(:disabled) {
-  border-color: var(--color-text-primary);
-}
-
-.img-btn-select:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.img-hint {
-  font-size: var(--font-size-xs);
-  color: var(--color-text-muted);
-}
-
-.img-url-row {
-  display: flex;
-  gap: var(--spacing-xs);
-  width: 100%;
-}
-
-.img-url-input {
-  flex: 1;
-  padding: var(--spacing-sm) var(--spacing-md);
-  border: 1px solid var(--color-border);
-  background: var(--color-bg-primary);
-  color: var(--color-text-primary);
-  font-family: var(--font-family-base);
-  font-size: var(--font-size-sm);
-  min-width: 0;
-}
-
-.img-url-input:focus {
-  outline: none;
-  border-color: var(--color-text-primary);
-}
-
-.img-url-input::placeholder {
-  color: var(--color-text-muted);
-}
-
-.img-btn-apply {
-  padding: var(--spacing-sm) var(--spacing-md);
-  border: 1px solid var(--color-text-primary);
-  background: var(--color-text-primary);
-  color: var(--color-text-inverse);
-  font-family: var(--font-family-base);
-  font-size: var(--font-size-sm);
-  cursor: pointer;
-  white-space: nowrap;
-}
-
-.img-btn-apply:hover {
-  background: var(--color-bg-primary);
-  color: var(--color-text-primary);
-}
-
-.img-spinner {
-  display: inline-block;
-  width: 0.75rem;
-  height: 0.75rem;
-  border: 2px solid var(--color-border);
-  border-top-color: var(--color-text-primary);
-  border-radius: 50%;
-  animation: spin 0.7s linear infinite;
-}
-
-.img-error {
-  margin: 0;
-  font-size: var(--font-size-xs);
-  color: var(--color-danger);
 }
 </style>
