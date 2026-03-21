@@ -8,11 +8,11 @@ export function extractLocalImageUrls(content: string | null | undefined): strin
   if (!content) return [];
 
   // Tiptap 에디터의 JSON 문자열인 경우 대비를 위해 정규식을 넓게 잡거나
-  // src="URL" 형태를 모두 매칭합니다. 여기서는 텍스트 내에서 /uploads/로 시작하는 
+  // src="URL" 형태를 모두 매칭합니다. 여기서는 텍스트 내에서 /uploads/로 시작하는
   // 이미지 경로를 찾는 데 집중합니다.
   const regex = /\/uploads\/[a-f0-9]{64}\.[a-z0-9]+/gi;
   const matches = content.match(regex);
-  
+
   if (!matches) return [];
 
   // 중복된 URL 제거 후 반환
@@ -21,7 +21,7 @@ export function extractLocalImageUrls(content: string | null | undefined): strin
 
 /**
  * 특정 엔티티(News, Work, Event)의 이미지 참조 정보를 DB와 동기화합니다.
- * 
+ *
  * @param targetType 참조 주체의 타입 (예: "news", "works", "events")
  * @param targetId 참조 주체의 PK (예: news.id)
  * @param urls 현재 파싱된 사용중인 이미지 URL 목록

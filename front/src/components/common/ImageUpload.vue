@@ -56,8 +56,7 @@ const handleFileChange = async (event: Event) => {
     const { url } = await uploadFile(file);
     emit("update:modelValue", url);
   } catch (error) {
-    errorMessage.value =
-      error instanceof Error ? error.message : "업로드에 실패했습니다.";
+    errorMessage.value = error instanceof Error ? error.message : "업로드에 실패했습니다.";
   } finally {
     isUploading.value = false;
     input.value = "";

@@ -43,8 +43,7 @@ const handleImageFileChange = async (event: Event) => {
     const { url } = await uploadFile(file);
     insertImageUrl(url);
   } catch (error) {
-    imageUploadError.value =
-      error instanceof Error ? error.message : "업로드에 실패했습니다.";
+    imageUploadError.value = error instanceof Error ? error.message : "업로드에 실패했습니다.";
   } finally {
     isImageUploading.value = false;
     input.value = "";
@@ -72,14 +71,24 @@ const triggerFileInput = () => {
             type="button"
             class="img-tab-btn"
             :class="{ active: imageDialogTab === 'upload' }"
-            @click="imageDialogTab = 'upload'; imageUploadError = ''"
-          >파일 업로드</button>
+            @click="
+              imageDialogTab = 'upload';
+              imageUploadError = '';
+            "
+          >
+            파일 업로드
+          </button>
           <button
             type="button"
             class="img-tab-btn"
             :class="{ active: imageDialogTab === 'url' }"
-            @click="imageDialogTab = 'url'; imageUploadError = ''"
-          >URL 입력</button>
+            @click="
+              imageDialogTab = 'url';
+              imageUploadError = '';
+            "
+          >
+            URL 입력
+          </button>
         </div>
 
         <!-- 파일 업로드 탭 -->
@@ -98,7 +107,7 @@ const triggerFileInput = () => {
             @click="triggerFileInput"
           >
             <span v-if="isImageUploading" class="img-spinner" />
-            {{ isImageUploading ? '업로드 중...' : '파일 선택' }}
+            {{ isImageUploading ? "업로드 중..." : "파일 선택" }}
           </button>
           <span class="img-hint">JPG, PNG, WEBP, GIF (최대 5MB)</span>
         </div>

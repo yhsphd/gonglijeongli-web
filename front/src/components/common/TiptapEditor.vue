@@ -516,7 +516,8 @@ const insertTable = () => {
   /* border-radius: var(--radius-xs); */
 }
 
-.editor-content :deep(.tiptap [data-node="image"].ProseMirror-selectednode [data-resize-wrapper]::before) {
+.editor-content
+  :deep(.tiptap [data-node="image"].ProseMirror-selectednode [data-resize-wrapper]::before) {
   content: "";
   position: absolute;
   inset: -2px;

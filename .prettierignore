@@ -1,0 +1,11 @@
+node_modules
+dist
+dist-ssr
+coverage
+front/src/generated
+back/src/generated
+front/auto-imports.d.ts
+front/components.d.ts
+back/prisma/
+back/src/swagger-output.json
+.turbo/

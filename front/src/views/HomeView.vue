@@ -82,7 +82,12 @@ onMounted(() => {
         <p v-if="isLoadingEvents" class="empty-state">불러오는 중...</p>
         <p v-else-if="eventItems.length === 0" class="empty-state">표시할 행사가 없습니다.</p>
         <div v-else class="events-grid">
-          <RouterLink v-for="item in eventItems" :key="item.id" class="entry-link" :to="{ name: 'events' }">
+          <RouterLink
+            v-for="item in eventItems"
+            :key="item.id"
+            class="entry-link"
+            :to="{ name: 'events' }"
+          >
             <ThumbEntry :title="item.title" :date="item.date" :thumb="item.thumb || undefined" />
           </RouterLink>
         </div>
@@ -98,7 +103,12 @@ onMounted(() => {
         <p v-if="isLoadingWorks" class="empty-state">불러오는 중...</p>
         <p v-else-if="workItems.length === 0" class="empty-state">표시할 작품이 없습니다.</p>
         <div v-else class="works-grid">
-          <RouterLink v-for="item in workItems" :key="item.id" class="entry-link" :to="{ name: 'works' }">
+          <RouterLink
+            v-for="item in workItems"
+            :key="item.id"
+            class="entry-link"
+            :to="{ name: 'works' }"
+          >
             <ThumbEntry :title="item.title" :date="item.date" :thumb="item.thumb || undefined" />
           </RouterLink>
         </div>

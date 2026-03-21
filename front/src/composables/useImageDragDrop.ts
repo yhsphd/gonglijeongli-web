@@ -33,7 +33,9 @@ export function useImageDragDrop() {
           const maybeImageNode = view.state.doc.nodeAt(imagePos);
 
           if (maybeImageNode?.type.name === "image") {
-            view.dispatch(view.state.tr.setSelection(NodeSelection.create(view.state.doc, imagePos)));
+            view.dispatch(
+              view.state.tr.setSelection(NodeSelection.create(view.state.doc, imagePos))
+            );
 
             internalImageDragState.value = {
               from: imagePos,
@@ -93,9 +95,7 @@ export function useImageDragDrop() {
       const adjustedDropPos = Math.max(0, Math.min(rawDropPos, editor.state.doc.content.size));
       const imageNode = editor.state.schema.nodeFromJSON(nodeJSON);
 
-      const tr = editor.state.tr
-        .delete(from, to)
-        .insert(adjustedDropPos, imageNode);
+      const tr = editor.state.tr.delete(from, to).insert(adjustedDropPos, imageNode);
 
       tr.setSelection(NodeSelection.create(tr.doc, adjustedDropPos)).scrollIntoView();
 

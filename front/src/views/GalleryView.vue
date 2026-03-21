@@ -276,7 +276,9 @@ const openOriginal = (item: GalleryItem) => {
   width: 100%;
   display: block;
   opacity: 0;
-  transition: transform 0.3s ease, opacity 0.5s ease;
+  transition:
+    transform 0.3s ease,
+    opacity 0.5s ease;
 }
 
 .masonry-item img.loaded {

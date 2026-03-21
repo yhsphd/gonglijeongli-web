@@ -34,11 +34,7 @@ if (!fs.existsSync(UPLOADS_DIR)) {
 const storage = multer.memoryStorage();
 
 // 허용 파일 형식 필터
-const fileFilter = (
-  _req: Request,
-  file: Express.Multer.File,
-  cb: multer.FileFilterCallback
-) => {
+const fileFilter = (_req: Request, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
   const allowedTypes = ["image/jpeg", "image/png", "image/webp", "image/gif"];
   if (allowedTypes.includes(file.mimetype)) {
     cb(null, true);

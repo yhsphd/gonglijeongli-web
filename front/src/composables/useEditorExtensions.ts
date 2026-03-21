@@ -79,10 +79,14 @@ export function getEditorExtensions(placeholderText?: string) {
         for (const file of files) {
           try {
             const { url } = await uploadFile(file);
-            currentEditor.chain().insertContentAt(_pos, {
-              type: "image",
-              attrs: { src: url },
-            }).focus().run();
+            currentEditor
+              .chain()
+              .insertContentAt(_pos, {
+                type: "image",
+                attrs: { src: url },
+              })
+              .focus()
+              .run();
           } catch (error) {
             console.error("이미지 드롭 업로드 실패:", error);
             alert("이미지 업로드에 실패했습니다.");

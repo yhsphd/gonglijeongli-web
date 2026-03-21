@@ -267,7 +267,6 @@ const handleDelete = async (id: number) => {
   .news-table th.col-likes {
     display: none;
   }
-
 }
 
 @media (max-width: 480px) {

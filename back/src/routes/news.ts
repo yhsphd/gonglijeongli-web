@@ -125,7 +125,7 @@ router.post("/", requireAdmin, async (req: Request, res: Response) => {
     // 이미지 참조 동기화
     const urlsToTrack = [
       ...extractLocalImageUrls(news.thumbnail),
-      ...extractLocalImageUrls(news.content)
+      ...extractLocalImageUrls(news.content),
     ];
     await syncImageReferences("news", news.id, urlsToTrack);
 
@@ -188,7 +188,7 @@ router.put("/:id", requireAdmin, async (req: Request, res: Response) => {
     // 이미지 참조 동기화
     const urlsToTrack = [
       ...extractLocalImageUrls(news.thumbnail),
-      ...extractLocalImageUrls(news.content)
+      ...extractLocalImageUrls(news.content),
     ];
     await syncImageReferences("news", news.id, urlsToTrack);
 

@@ -221,7 +221,11 @@ const handleCardClick = (work: WorkItem) => {
           @click="handleCardClick(work)"
         >
           <template #overlay>
-            <CardActions v-if="authStore.isAdmin" @edit="openEditModal(work)" @delete="handleDelete(work.id)" />
+            <CardActions
+              v-if="authStore.isAdmin"
+              @edit="openEditModal(work)"
+              @delete="handleDelete(work.id)"
+            />
           </template>
           <div class="card-tags">
             <span v-for="tag in work.tags" :key="tag" class="tag">{{ tag }}</span>
@@ -269,10 +273,7 @@ const handleCardClick = (work: WorkItem) => {
         placeholder="작품에 대한 간단한 설명"
       />
       <FormInput v-model="formData.date" label="발행일" placeholder="예: 2026.02" required />
-      <ImageUpload
-        v-model="formData.thumb"
-        label="썸네일 이미지"
-      />
+      <ImageUpload v-model="formData.thumb" label="썸네일 이미지" />
       <FormInput v-model="formData.link" label="연결 링크" placeholder="https://example.com/work" />
       <div class="form-group">
         <label>태그 *</label>

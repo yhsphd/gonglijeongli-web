@@ -176,7 +176,9 @@ const handleCardClick = (event: EventItem) => {
           @click="handleCardClick(event)"
         >
           <template #overlay>
-            <span class="status-badge" :class="event.status">{{ getStatusLabel(event.status) }}</span>
+            <span class="status-badge" :class="event.status">{{
+              getStatusLabel(event.status)
+            }}</span>
             <CardActions
               v-if="authStore.isAdmin"
               @edit="openEditModal(event)"
@@ -225,10 +227,7 @@ const handleCardClick = (event: EventItem) => {
         placeholder="행사 장소를 입력하세요"
         required
       />
-      <ImageUpload
-        v-model="formData.thumb"
-        label="썸네일 이미지"
-      />
+      <ImageUpload v-model="formData.thumb" label="썸네일 이미지" />
       <FormInput
         v-model="formData.link"
         label="연결 링크"
