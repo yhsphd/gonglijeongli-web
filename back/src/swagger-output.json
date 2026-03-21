@@ -960,6 +960,25 @@
           }
         ]
       }
+    },
+    "/api/upload/cleanup": {
+      "delete": {
+        "tags": [
+          "Upload"
+        ],
+        "summary": "사용하지 않는 미참조 이미지 일괄 삭제 (가비지 컬렉션)",
+        "description": "",
+        "responses": {
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ]
+      }
     }
   },
   "components": {

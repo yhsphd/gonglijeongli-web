@@ -1,6 +1,7 @@
 import { Router, Request, Response } from "express";
 import { prisma } from "../prisma";
 import { requireAdmin } from "../middleware/auth";
+import { extractLocalImageUrls, syncImageReferences } from "../utils/imageTracker";
 
 const router = Router();
 
@@ -121,6 +122,13 @@ router.post("/", requireAdmin, async (req: Request, res: Response) => {
       },
     });
 
+    // 이미지 참조 동기화
+    const urlsToTrack = [
+      ...extractLocalImageUrls(news.thumbnail),
+      ...extractLocalImageUrls(news.content)
+    ];
+    await syncImageReferences("news", news.id, urlsToTrack);
+
     res.status(201).json(news);
   } catch (error) {
     console.error("POST /api/news 오류:", error);
@@ -177,6 +185,13 @@ router.put("/:id", requireAdmin, async (req: Request, res: Response) => {
       },
     });
 
+    // 이미지 참조 동기화
+    const urlsToTrack = [
+      ...extractLocalImageUrls(news.thumbnail),
+      ...extractLocalImageUrls(news.content)
+    ];
+    await syncImageReferences("news", news.id, urlsToTrack);
+
     res.json(news);
   } catch (error) {
     console.error("PUT /api/news/:id 오류:", error);
@@ -207,6 +222,12 @@ router.delete("/:id", requireAdmin, async (req: Request, res: Response) => {
     }
 
     await prisma.news.delete({ where: { id } });
+
+    // 연관된 이미지 참조 모두 삭제 (고아 파일로 만들어 가비지 컬렉터가 지울 수 있게 함)
+    await prisma.imageReference.deleteMany({
+      where: { targetType: "news", targetId: id },
+    });
+
     res.status(204).send();
   } catch (error) {
     console.error("DELETE /api/news/:id 오류:", error);

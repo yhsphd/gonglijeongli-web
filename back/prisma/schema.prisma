@@ -18,14 +18,14 @@ datasource db {
 // swagger.yaml의 EventItem 스키마와 1:1 대응
 model Event {
   id        Int      @id @default(autoincrement()) // 자동 증가 PK
-  title     String                                  // 행사명
-  date      String                                  // "2026.03.15" 또는 "2026.03.15 ~ 2026.03.16"
-  location  String                                  // 행사 장소
-  thumb     String?                                 // 썸네일 이미지 경로 (선택)
-  link      String?                                 // 외부 링크 (선택)
-  status    String   @default("upcoming")           // "upcoming" | "ongoing" | "ended"
-  createdAt DateTime @default(now())                // 생성 시각
-  updatedAt DateTime @updatedAt                     // 수정 시각
+  title     String // 행사명
+  date      String // "2026.03.15" 또는 "2026.03.15 ~ 2026.03.16"
+  location  String // 행사 장소
+  thumb     String? // 썸네일 이미지 경로 (선택)
+  link      String? // 외부 링크 (선택)
+  status    String   @default("upcoming") // "upcoming" | "ongoing" | "ended"
+  createdAt DateTime @default(now()) // 생성 시각
+  updatedAt DateTime @updatedAt // 수정 시각
 
   @@map("events") // 실제 DB 테이블 이름을 "events"로 지정
 }
@@ -33,14 +33,14 @@ model Event {
 // ─── 공지사항/소식(News) 모델 ───
 model News {
   id        Int      @id @default(autoincrement()) // 자동 증가 PK
-  title     String                                  // 뉴스/공지사항 제목
-  content   String                                  // 본문 내용 (Tiptap JSON의 문자열 형태 등)
-  thumbnail String?                                 // 썸네일 이미지 경로 (선택)
-  date      String                                  // 작성일 표기 (예: "2026.02.10")
-  views     Int      @default(0)                    // 조회수
-  likes     Int      @default(0)                    // 좋아요 수
-  createdAt DateTime @default(now())                // 데이터 생성 시각
-  updatedAt DateTime @updatedAt                     // 데이터 수정 시각
+  title     String // 뉴스/공지사항 제목
+  content   String // 본문 내용 (Tiptap JSON의 문자열 형태 등)
+  thumbnail String? // 썸네일 이미지 경로 (선택)
+  date      String // 작성일 표기 (예: "2026.02.10")
+  views     Int      @default(0) // 조회수
+  likes     Int      @default(0) // 좋아요 수
+  createdAt DateTime @default(now()) // 데이터 생성 시각
+  updatedAt DateTime @updatedAt // 데이터 수정 시각
 
   @@map("news") // 실제 DB 테이블 이름을 "news"로 지정
 }
@@ -48,14 +48,39 @@ model News {
 // ─── 작품(Work) 모델 ───
 model Work {
   id          Int      @id @default(autoincrement()) // 자동 증가 PK
-  title       String                                  // 작품명
-  description String?                                 // 설명 (선택)
-  date        String                                  // 발행일 (예: "2026.02")
-  thumb       String?                                 // 썸네일 이미지 경로 (선택)
-  link        String?                                 // 외부 링크 (선택)
-  tags        String                                  // 태그 목록 (JSON 배열 문자열로 저장)
-  createdAt   DateTime @default(now())                // 데이터 생성 시각
-  updatedAt   DateTime @updatedAt                     // 데이터 수정 시각
+  title       String // 작품명
+  description String? // 설명 (선택)
+  date        String // 발행일 (예: "2026.02")
+  thumb       String? // 썸네일 이미지 경로 (선택)
+  link        String? // 외부 링크 (선택)
+  tags        String // 태그 목록 (JSON 배열 문자열로 저장)
+  createdAt   DateTime @default(now()) // 데이터 생성 시각
+  updatedAt   DateTime @updatedAt // 데이터 수정 시각
 
   @@map("works") // 실제 DB 테이블 이름을 "works"로 지정
+}
+
+// ─── 이미지 관리 모델 ───
+// 시스템에 직접 업로드된 파일 정보. hash로 중복 방지.
+model Image {
+  id        String   @id @default(uuid())
+  hash      String   @unique // 파일의 SHA-256 해시값 (중복 방지용)
+  url       String   @unique // 파일 접근 URL (/uploads/xyz.jpg)
+  createdAt DateTime @default(now()) // 최초 업로드 시간
+
+  references ImageReference[]
+
+  @@map("images")
+}
+
+// 특정 이미지(Image)가 어느 엔티티(News, Work 등)에 사용중인지 기록
+model ImageReference {
+  id         String @id @default(uuid())
+  imageId    String
+  image      Image  @relation(fields: [imageId], references: [id], onDelete: Cascade)
+  targetType String // 참조하는 주체 타입 ("news", "works", "events")
+  targetId   Int // 참조하는 주체의 ID (예: news.id)
+
+  @@index([targetType, targetId]) // 특정 주체의 이미지들을 빠르게 지울 때 유용한 인덱스
+  @@map("image_references")
 }

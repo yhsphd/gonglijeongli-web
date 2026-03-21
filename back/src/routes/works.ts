@@ -10,6 +10,7 @@
 import { Router, Request, Response } from "express";
 import { prisma } from "../prisma";
 import { requireAdmin } from "../middleware/auth";
+import { extractLocalImageUrls, syncImageReferences } from "../utils/imageTracker";
 
 const router = Router();
 
@@ -109,6 +110,10 @@ router.post("/", requireAdmin, async (req: Request, res: Response) => {
       },
     });
 
+    // 이미지 참조 동기화
+    const urlsToTrack = extractLocalImageUrls(workRaw.thumb);
+    await syncImageReferences("works", workRaw.id, urlsToTrack);
+
     const work = {
       ...workRaw,
       tags: workRaw.tags ? JSON.parse(workRaw.tags) : [],
@@ -181,6 +186,10 @@ router.put("/:id", requireAdmin, async (req: Request, res: Response) => {
       },
     });
 
+    // 이미지 참조 동기화
+    const urlsToTrack = extractLocalImageUrls(workRaw.thumb);
+    await syncImageReferences("works", workRaw.id, urlsToTrack);
+
     const work = {
       ...workRaw,
       tags: workRaw.tags ? JSON.parse(workRaw.tags) : [],
@@ -215,6 +224,12 @@ router.delete("/:id", requireAdmin, async (req: Request, res: Response): Promise
     }
 
     await prisma.work.delete({ where: { id } });
+
+    // 연관된 이미지 참조 모두 삭제
+    await prisma.imageReference.deleteMany({
+      where: { targetType: "works", targetId: id },
+    });
+
     res.status(204).send();
   } catch (error) {
     console.error("DELETE /api/works/:id 오류:", error);

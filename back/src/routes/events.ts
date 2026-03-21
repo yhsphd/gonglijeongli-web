@@ -22,6 +22,7 @@
 import { Router, Request, Response } from "express";
 import { prisma } from "../prisma";
 import { requireAdmin } from "../middleware/auth";
+import { extractLocalImageUrls, syncImageReferences } from "../utils/imageTracker";
 
 const router = Router();
 
@@ -149,6 +150,10 @@ router.post("/", requireAdmin, async (req: Request, res: Response) => {
       },
     });
 
+    // 이미지 참조 동기화
+    const urlsToTrack = extractLocalImageUrls(event.thumb);
+    await syncImageReferences("events", event.id, urlsToTrack);
+
     res.status(201).json(event);
   } catch (error) {
     console.error("POST /api/events 오류:", error);
@@ -223,6 +228,10 @@ router.put("/:id", requireAdmin, async (req: Request, res: Response) => {
       },
     });
 
+    // 이미지 참조 동기화
+    const urlsToTrack = extractLocalImageUrls(event.thumb);
+    await syncImageReferences("events", event.id, urlsToTrack);
+
     res.json(event);
   } catch (error) {
     console.error("PUT /api/events/:id 오류:", error);
@@ -254,6 +263,12 @@ router.delete("/:id", requireAdmin, async (req: Request, res: Response) => {
     }
 
     await prisma.event.delete({ where: { id } });
+
+    // 연관된 이미지 참조 모두 삭제
+    await prisma.imageReference.deleteMany({
+      where: { targetType: "events", targetId: id },
+    });
+
     res.status(204).send(); // 204는 응답 본문 없음
   } catch (error) {
     console.error("DELETE /api/events/:id 오류:", error);

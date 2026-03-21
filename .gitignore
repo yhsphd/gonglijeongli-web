@@ -3,6 +3,7 @@
 node_modules
 .cache
 .turbo
+.eslintcache
 
 # NOTE: back/src/swagger-output.json is INTENTIONALLY NOT IGNORED.
 # It should be committed to Git so that frontend and CI/CD pipelines
