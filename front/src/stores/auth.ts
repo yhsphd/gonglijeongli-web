@@ -14,6 +14,7 @@ export const useAuthStore = defineStore("auth", () => {
   const isAdmin = ref(false);
   const username = ref<string | undefined>();
   const isLoading = ref(false);
+  const isInitialized = ref(false);
 
   /** 서버에 현재 세션 상태를 확인 */
   async function checkAuth() {
@@ -24,6 +25,8 @@ export const useAuthStore = defineStore("auth", () => {
     } catch {
       isAdmin.value = false;
       username.value = undefined;
+    } finally {
+      isInitialized.value = true;
     }
   }
 
@@ -45,5 +48,5 @@ export const useAuthStore = defineStore("auth", () => {
     username.value = undefined;
   }
 
-  return { isAdmin, username, isLoading, checkAuth, login, logout };
+  return { isAdmin, username, isLoading, isInitialized, checkAuth, login, logout };
 });

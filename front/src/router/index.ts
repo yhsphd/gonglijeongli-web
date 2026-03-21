@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from "vue-router";
 import DefaultLayout from "@/layouts/DefaultLayout.vue";
+import { useAuthStore } from "@/stores/auth";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -27,6 +28,7 @@ const router = createRouter({
           path: "news/write",
           name: "news-write",
           component: () => import("@/views/news/WriteView.vue"),
+          meta: { requiresAdmin: true },
         },
         {
           path: "news/:id",
@@ -51,6 +53,24 @@ const router = createRouter({
       ],
     },
   ],
+});
+
+router.beforeEach(async (to, from, next) => {
+  const authStore = useAuthStore();
+
+  if (to.meta.requiresAdmin) {
+    if (!authStore.isInitialized) {
+      // 앱 초기화 전이면 세션 확인을 기다립니다.
+      await authStore.checkAuth();
+    }
+
+    if (!authStore.isAdmin) {
+      alert("관리자 권한이 필요합니다.");
+      return next({ name: "home" });
+    }
+  }
+
+  next();
 });
 
 export default router;
