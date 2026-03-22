@@ -30,3 +30,8 @@ app.use(createPinia());
 app.use(router);
 
 app.mount("#app");
+
+// 개발 서버인 경우 페이지 제목에 접두어 추가
+if (import.meta.env.DEV) {
+  document.title = `[DEV] ${document.title}`;
+}
