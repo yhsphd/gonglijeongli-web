@@ -485,9 +485,6 @@
                   "content": {
                     "example": "any"
                   },
-                  "thumbnail": {
-                    "example": "any"
-                  },
                   "date": {
                     "example": "any"
                   }
@@ -611,9 +608,6 @@
                     "example": "any"
                   },
                   "content": {
-                    "example": "any"
-                  },
-                  "thumbnail": {
                     "example": "any"
                   },
                   "date": {

@@ -28,7 +28,6 @@ export interface NewsListItem {
 export interface NewsFormData {
   title: string;
   content: object | string;
-  thumbnail?: string | null;
   date: string;
   likes?: number;
 }

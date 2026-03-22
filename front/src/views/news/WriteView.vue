@@ -2,7 +2,6 @@
 import { ref, onMounted } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import TiptapEditor from "@/components/common/TiptapEditor.vue";
-import ImageUpload from "@/components/common/ImageUpload.vue";
 import { createNews, updateNews, fetchNewsDetail } from "@/api/news";
 
 const router = useRouter();
@@ -14,7 +13,6 @@ const editId = ref<number | null>(null);
 const initialState = ref({
   title: "",
   content: { type: "doc", content: [{ type: "paragraph" }] },
-  thumbnail: "",
 });
 
 // 폼 데이터
@@ -24,7 +22,6 @@ const content = ref<any>({
   type: "doc",
   content: [{ type: "paragraph" }],
 });
-const thumbnail = ref("");
 
 // 초기 데이터 로드 (수정 모드일 경우)
 onMounted(async () => {
@@ -35,7 +32,6 @@ onMounted(async () => {
       try {
         const data = await fetchNewsDetail(id);
         title.value = data.title;
-        thumbnail.value = data.thumbnail || "";
         // content가 string이면 JSON으로 파싱 시도
         if (data.content) {
           try {
@@ -50,7 +46,6 @@ onMounted(async () => {
         initialState.value = {
           title: title.value,
           content: JSON.parse(JSON.stringify(content.value)), // deep copy
-          thumbnail: thumbnail.value,
         };
       } catch (error) {
         console.error("뉴스 상세 로드 실패:", error);
@@ -63,7 +58,6 @@ onMounted(async () => {
     initialState.value = {
       title: "",
       content: { type: "doc", content: [{ type: "paragraph" }] },
-      thumbnail: "",
     };
   }
 });
@@ -75,8 +69,7 @@ const isSubmitting = ref(false);
 const hasChanged = () => {
   return (
     title.value !== initialState.value.title ||
-    JSON.stringify(content.value) !== JSON.stringify(initialState.value.content) ||
-    thumbnail.value !== initialState.value.thumbnail
+    JSON.stringify(content.value) !== JSON.stringify(initialState.value.content)
   );
 };
 
@@ -95,7 +88,6 @@ const handleSubmit = async () => {
     const postData = {
       title: title.value,
       content: content.value,
-      thumbnail: thumbnail.value || null,
       date: dateFormatted,
     };
 
@@ -144,11 +136,6 @@ const handleCancel = () => {
           placeholder="제목을 입력하세요"
           maxlength="100"
         />
-      </div>
-
-      <!-- 썸네일 이미지 -->
-      <div class="form-group">
-        <ImageUpload v-model="thumbnail" label="썸네일 이미지 (선택)" />
       </div>
 
       <!-- 에디터 -->

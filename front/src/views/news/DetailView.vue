@@ -113,11 +113,6 @@ onMounted(() => {
         </div>
       </header>
 
-      <!-- 썸네일 -->
-      <div class="post-thumbnail" v-if="post.thumbnail">
-        <img :src="post.thumbnail" :alt="post.title" />
-      </div>
-
       <article class="post-content">
         <TiptapRenderer :content="post.content as Record<string, unknown>" />
       </article>
@@ -178,19 +173,6 @@ onMounted(() => {
 
 .meta-separator {
   color: var(--color-text-muted);
-}
-
-/* Thumbnail */
-.post-thumbnail {
-  max-width: 100%;
-  text-align: center;
-}
-
-.post-thumbnail img {
-  max-width: 100%;
-  max-height: 25rem;
-  object-fit: contain;
-  border-radius: var(--radius-sm);
 }
 
 /* Content */

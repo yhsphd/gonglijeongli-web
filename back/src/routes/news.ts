@@ -5,6 +5,31 @@ import { extractLocalImageUrls, syncImageReferences } from "../utils/imageTracke
 
 const router = Router();
 
+type TiptapNode = {
+  type?: string;
+  attrs?: { src?: string };
+  content?: TiptapNode[];
+};
+
+function extractFirstImageFromTiptap(doc: unknown): string | null {
+  if (!doc || typeof doc !== "object") return null;
+
+  const node = doc as TiptapNode;
+
+  if (node.type === "image" && node.attrs?.src) {
+    return node.attrs.src;
+  }
+
+  if (Array.isArray(node.content)) {
+    for (const child of node.content) {
+      const src = extractFirstImageFromTiptap(child);
+      if (src) return src;
+    }
+  }
+
+  return null;
+}
+
 /**
  * GET /api/news?page=1&limit=10
  *
@@ -106,18 +131,28 @@ router.post("/", requireAdmin, async (req: Request, res: Response) => {
         }
   } */
   try {
-    const { title, content, thumbnail, date } = req.body;
+    const { title, content, date } = req.body;
 
     if (!title || !content || !date) {
       res.status(400).json({ message: "title, content, date는 필수입니다." });
       return;
     }
 
+    let parsedContent = content;
+    if (typeof content === "string") {
+      try {
+        parsedContent = JSON.parse(content);
+      } catch (parseError) {
+        console.warn("POST /api/news content JSON 파싱 실패:", parseError);
+      }
+    }
+    const computedThumbnail = extractFirstImageFromTiptap(parsedContent);
+
     const news = await prisma.news.create({
       data: {
         title,
         content: typeof content === "string" ? content : JSON.stringify(content), // 만약 객체로 오면 문자열 변환
-        thumbnail: thumbnail || null,
+        thumbnail: computedThumbnail,
         date,
       },
     });
@@ -164,7 +199,7 @@ router.put("/:id", requireAdmin, async (req: Request, res: Response) => {
       return;
     }
 
-    const { title, content, thumbnail, date, likes } = req.body;
+    const { title, content, date, likes } = req.body;
 
     const existing = await prisma.news.findUnique({ where: { id } });
     if (!existing) {
@@ -172,17 +207,29 @@ router.put("/:id", requireAdmin, async (req: Request, res: Response) => {
       return;
     }
 
+    // Update payload
+    const updateData: Parameters<typeof prisma.news.update>[0]["data"] = {
+      ...(title !== undefined && { title }),
+      ...(date !== undefined && { date }),
+      ...(likes !== undefined && { likes }), // 좋아요 직접 수정 허용하는 경우
+    };
+
+    if (content !== undefined) {
+      updateData.content = typeof content === "string" ? content : JSON.stringify(content);
+      let parsedContent = content;
+      if (typeof content === "string") {
+        try {
+          parsedContent = JSON.parse(content);
+        } catch (parseError) {
+          console.warn("PUT /api/news/:id content JSON 파싱 실패:", parseError);
+        }
+      }
+      updateData.thumbnail = extractFirstImageFromTiptap(parsedContent);
+    }
+
     const news = await prisma.news.update({
       where: { id },
-      data: {
-        ...(title !== undefined && { title }),
-        ...(content !== undefined && {
-          content: typeof content === "string" ? content : JSON.stringify(content),
-        }),
-        ...(thumbnail !== undefined && { thumbnail: thumbnail || null }),
-        ...(date !== undefined && { date }),
-        ...(likes !== undefined && { likes }), // 좋아요 직접 수정 허용하는 경우
-      },
+      data: updateData,
     });
 
     // 이미지 참조 동기화
