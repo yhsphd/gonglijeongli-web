@@ -135,8 +135,14 @@ jobs:
             sudo find "$FRONT_SRC" -type d -exec chmod 755 {} \;
             sudo find "$FRONT_SRC" -type f -exec chmod 644 {} \;
 
-            # Nginx가 해당 심볼릭 링크를 따라가 원본 파일들에 접근하려면 부모 경로들에 x(실행, 탐색) 권한이 필요함
-            sudo chmod +x "/home" "$DEPLOY_PATH" "$DEPLOY_PATH/gonglijeongli-web" "$DEPLOY_PATH/gonglijeongli-web/front"
+            # Nginx가 해당 심볼릭 링크 및 업로드 폴더에 접근하려면 모든 부모 경로들에 x(실행, 탐색) 권한이 필요함
+            for target_path in "$FRONT_SRC" "$DEPLOY_PATH/gonglijeongli-data/uploads"; do
+              d="$target_path"
+              while [ "$d" != "/" ] && [ "$d" != "." ] && [ -n "$d" ]; do
+                sudo chmod +x "$d" || true
+                d="$(dirname "$d")"
+              done
+            done
 
             # 백엔드 의존성 설치 (프로덕션용)
             cd "$DEPLOY_PATH/gonglijeongli-web"
