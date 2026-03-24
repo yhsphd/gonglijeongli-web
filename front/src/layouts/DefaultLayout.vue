@@ -71,7 +71,8 @@ onUnmounted(() => {
 }
 
 .main {
-  width: var(--layout-content-width);
+  width: 100%;
+  max-width: var(--layout-content-width);
   margin: 0 auto;
   flex: 1;
 
@@ -82,7 +83,8 @@ onUnmounted(() => {
   box-shadow: var(--shadow-sm);
 }
 .content {
-  padding: 10rem var(--spacing-2xl) var(--spacing-2xl);
+  padding: calc(var(--layout-header-height) + var(--layout-header-top) + var(--spacing-xl))
+    var(--layout-content-padding) var(--layout-content-padding);
   flex-grow: 1;
 }
 
@@ -120,5 +122,11 @@ onUnmounted(() => {
 .fade-enter-from,
 .fade-leave-to {
   opacity: 0;
+}
+
+@media (max-width: 1040px) {
+  .main {
+    width: calc(100% - var(--spacing-md));
+  }
 }
 </style>

@@ -152,4 +152,19 @@ const handleLogout = async () => {
   font-size: var(--font-size-sm);
   color: var(--color-danger);
 }
+
+@media (max-width: 768px) {
+  .footer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--spacing-md);
+  }
+
+  .btn-admin {
+    position: static;
+    transform: none;
+    margin-top: var(--spacing-sm);
+  }
+}
 </style>

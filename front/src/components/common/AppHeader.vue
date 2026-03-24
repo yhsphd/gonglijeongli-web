@@ -1,8 +1,13 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { ref, computed } from "vue";
 import { RouterLink, useRoute } from "vue-router";
 
 const route = useRoute();
+const isMobileMenuOpen = ref(false);
+
+const toggleMobileMenu = () => {
+  isMobileMenuOpen.value = !isMobileMenuOpen.value;
+};
 
 const menus = [
   { label: ["소개", "About"], to: "/about" },
@@ -21,6 +26,12 @@ const isMenuActive = (menuPath: string) => {
     currentPath.value.startsWith(`${menuPath}?`)
   );
 };
+
+// 모바일 드롭다운 버튼에 표시될 현재 메뉴 이름
+const currentMenuLabel = computed(() => {
+  const activeMenu = menus.find((m) => isMenuActive(m.to));
+  return activeMenu ? activeMenu.label[0] : "홈";
+});
 </script>
 
 <template>
@@ -31,17 +42,51 @@ const isMenuActive = (menuPath: string) => {
         <img src="@/assets/img/logo.svg" />
       </RouterLink>
       <div class="flex-grow"></div>
-      <RouterLink
-        class="nav"
-        :class="{ 'is-active': isMenuActive(menu.to) }"
-        v-for="(menu, i) in menus"
-        :key="i"
-        :to="menu.to"
-      >
-        <span class="nav-label">{{ menu.label[0] }}</span>
-        <span class="nav-indicator"></span>
-        <span class="nav-label-en">{{ menu.label[1] }}</span>
-      </RouterLink>
+
+      <!-- Desktop Nav -->
+      <div class="desktop-nav">
+        <RouterLink
+          class="nav"
+          :class="{ 'is-active': isMenuActive(menu.to) }"
+          v-for="(menu, i) in menus"
+          :key="i"
+          :to="menu.to"
+        >
+          <span class="nav-label">{{ menu.label[0] }}</span>
+          <span class="nav-indicator"></span>
+          <span class="nav-label-en">{{ menu.label[1] }}</span>
+        </RouterLink>
+      </div>
+
+      <!-- Mobile Nav Toggle & Dropdown -->
+      <div class="mobile-dropdown-container">
+        <!-- Overlay -->
+        <div
+          v-if="isMobileMenuOpen"
+          class="mobile-dropdown-overlay"
+          @click="isMobileMenuOpen = false"
+        ></div>
+
+        <button class="mobile-menu-toggle" @click="toggleMobileMenu">
+          <span class="current-label">{{ currentMenuLabel }}</span>
+          <span class="caret-icon" :class="{ rotate: isMobileMenuOpen }">▼</span>
+        </button>
+
+        <Transition name="dropdown">
+          <div class="mobile-dropdown" v-show="isMobileMenuOpen" @click="isMobileMenuOpen = false">
+            <RouterLink
+              class="mobile-nav-item"
+              :class="{ 'is-active': isMenuActive(menu.to) }"
+              v-for="(menu, i) in menus"
+              :key="i"
+              :to="menu.to"
+            >
+              <span>{{ menu.label[0] }}</span>
+              <span class="en">{{ menu.label[1] }}</span>
+            </RouterLink>
+          </div>
+        </Transition>
+      </div>
     </div>
   </div>
 </template>
@@ -63,8 +108,10 @@ const isMenuActive = (menuPath: string) => {
   backdrop-filter: var(--blur-sm);
   z-index: var(--z-header);
 }
+
 .contents {
-  width: var(--layout-content-width);
+  width: 100%;
+  max-width: var(--layout-content-width);
   display: flex;
   align-items: center;
   padding: 0 var(--spacing-2-25xl);
@@ -74,11 +121,16 @@ const isMenuActive = (menuPath: string) => {
   position: relative;
   height: var(--header-logo-height);
 }
-.logo-container > img {
-  position: absolute;
+.logo-container > img:nth-child(1) {
+  position: static;
   height: var(--header-logo-height);
+  display: block;
 }
 .logo-container > img:nth-child(2) {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: var(--header-logo-height);
   opacity: 0.5;
   filter: blur(2px);
 }
@@ -107,7 +159,6 @@ const isMenuActive = (menuPath: string) => {
   line-height: 1.2;
 }
 
-/* Indicator - 45도 회전 정사각형 */
 .nav-indicator {
   position: relative;
   width: 6px;
@@ -118,7 +169,6 @@ const isMenuActive = (menuPath: string) => {
   transition: opacity 0.2s ease;
 }
 
-/* 가로선 (active 상태에서만 표시) */
 .nav-indicator::after {
   content: "";
   position: absolute;
@@ -131,13 +181,11 @@ const isMenuActive = (menuPath: string) => {
   transition: width 250ms ease-in-out;
 }
 
-/* Hover 효과 */
 .nav:hover {
   gap: var(--spacing-xs);
   opacity: 1;
 }
 
-/* Active 상태 (현재 페이지) */
 .nav.router-link-active,
 .nav.is-active {
   opacity: 1;
@@ -150,8 +198,131 @@ const isMenuActive = (menuPath: string) => {
 .nav.is-active .nav-indicator {
   opacity: 1;
 }
+
 .nav.router-link-active .nav-indicator::after,
 .nav.is-active .nav-indicator::after {
   width: 5rem;
+}
+
+.desktop-nav {
+  display: flex;
+  align-items: center;
+}
+
+.mobile-dropdown-container {
+  display: none;
+  position: relative;
+}
+
+.mobile-dropdown-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 990;
+}
+
+.mobile-menu-toggle {
+  background: var(--color-bg-primary);
+  border: 1px solid var(--color-border);
+  font-size: var(--font-size-base);
+  color: var(--color-text-primary);
+  font-family: inherit;
+  font-weight: var(--font-weight-bold);
+  cursor: pointer;
+  padding: var(--spacing-sm) var(--spacing-lg);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  position: relative;
+  justify-content: right;
+}
+
+.caret-icon {
+  font-size: 0.6em;
+  transition: transform 0.2s ease;
+  transform-origin: 50% 45%;
+}
+.caret-icon.rotate {
+  transform: rotate(180deg);
+}
+
+.mobile-dropdown {
+  position: absolute;
+  top: calc(100% + var(--spacing-xs));
+  right: 0;
+  width: max-content;
+  min-width: 12rem;
+  background: var(--color-bg-primary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-md);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  z-index: 1000;
+}
+
+.mobile-nav-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-md) var(--spacing-lg);
+  color: var(--color-text-primary);
+  text-decoration: none;
+  font-size: var(--font-size-base);
+  border-bottom: 1px solid var(--color-border);
+}
+.mobile-nav-item:last-child {
+  border-bottom: none;
+}
+.mobile-nav-item:hover,
+.mobile-nav-item.is-active {
+  background: var(--color-bg-subtle);
+  font-weight: var(--font-weight-bold);
+}
+.mobile-nav-item .en {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+}
+
+.dropdown-enter-active,
+.dropdown-leave-active {
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease;
+}
+
+.dropdown-enter-from,
+.dropdown-leave-to {
+  opacity: 0;
+  transform: translateY(-0.5rem);
+}
+
+@media (max-width: 1040px) {
+  .contents {
+    padding: 0 var(--spacing-md);
+  }
+}
+
+@media (max-width: 800px) {
+  .nav {
+    width: auto;
+    padding: 0 var(--spacing-sm);
+  }
+  .nav-label {
+    font-size: var(--font-size-base);
+  }
+  .nav.router-link-active .nav-indicator::after,
+  .nav.is-active .nav-indicator::after {
+    width: 2rem;
+  }
+}
+
+@media (max-width: 500px) {
+  .desktop-nav {
+    display: none;
+  }
+  .mobile-dropdown-container {
+    display: block;
+  }
 }
 </style>

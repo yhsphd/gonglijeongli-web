@@ -24,6 +24,9 @@ defineProps({
   display: flex;
   flex-direction: column;
   backdrop-filter: var(--blur-sm);
+  width: 100%;
+  min-width: 0; /* Prevent inner flex overflow */
+  box-sizing: border-box;
 }
 
 .box-top {
@@ -43,6 +46,11 @@ defineProps({
   margin-top: -0.5em;
   padding: 0 var(--spacing-sm);
 }
+.box-top h2 {
+  font-size: var(--font-size-lg);
+  line-height: var(--line-height-tight);
+  margin: 0;
+}
 
 .content {
   flex: 1;
@@ -50,6 +58,9 @@ defineProps({
   border-color: var(--color-border);
   border-style: none solid solid solid;
   padding: 0 var(--spacing-md) 0.5em;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
 }
 .spacer {
   height: 1em;

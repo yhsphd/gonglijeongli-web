@@ -70,6 +70,7 @@
   --layout-content-width: 62.5rem; /* 1000px */
   --layout-header-height: 6rem; /* 96px */
   --layout-header-top: 1.5rem; /* 24px */
+  --layout-content-padding: var(--spacing-2xl);
 
   /* =============================================
      Components
@@ -140,4 +141,35 @@
   --color-overlay-dark: rgba(0, 0, 0, 0.5);
   --color-overlay-darker: rgba(0, 0, 0, 0.6);
   --color-overlay-darkest: rgba(0, 0, 0, 0.95);
+}
+
+/* =============================================
+   Responsive Definitions (Mobile)
+   ============================================= */
+@media (max-width: 768px) {
+  :root {
+    /* Fonts & Spacing */
+    --font-size-base: 0.9375rem; /* 15px */
+    --font-size-lg: 1.25rem; /* 20px */
+    --font-size-xl: 1.5rem; /* 24px */
+
+    --spacing-xl: 1rem;
+    --spacing-2xl: 1.25rem;
+    --spacing-2-25xl: 1.5rem;
+    --spacing-2-5xl: 1.75rem;
+
+    /* Layout */
+    --layout-header-height: 4rem; /* Reduced header height */
+    --layout-header-top: 0.5rem; /* Attach header to the top of screen */
+    --layout-content-padding: var(--spacing-sm);
+
+    /* Components */
+    --header-logo-height: 2.25rem; /* Smaller logo */
+    --hero-height: 15rem; /* Smaller hero banner */
+    --hero-margin: 1rem;
+    --hero-nav-margin: 1.5rem;
+
+    --entry-height: 4rem;
+    --twitter-height: 20rem;
+  }
 }

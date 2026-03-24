@@ -171,4 +171,10 @@ onMounted(() => {
 .gallery-box {
   grid-column: 1 / -1;
 }
+
+@media (max-width: 768px) {
+  .list-boxes {
+    grid-template-columns: 1fr;
+  }
+}
 </style>

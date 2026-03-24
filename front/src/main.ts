@@ -12,6 +12,7 @@ import {
   faChevronRight,
   faPalette,
   faImage,
+  faBars,
 } from "@fortawesome/free-solid-svg-icons";
 import { faXTwitter } from "@fortawesome/free-brands-svg-icons";
 
@@ -21,7 +22,17 @@ import router from "./router";
 import "./assets/styles/main.css";
 
 // FontAwesome 아이콘 등록
-library.add(faPen, faTrash, faXmark, faChevronLeft, faChevronRight, faPalette, faImage, faXTwitter);
+library.add(
+  faPen,
+  faTrash,
+  faXmark,
+  faChevronLeft,
+  faChevronRight,
+  faPalette,
+  faImage,
+  faXTwitter,
+  faBars
+);
 
 const app = createApp(App);
 
