@@ -12,6 +12,7 @@ import multer from "multer";
 import path from "path";
 import fs from "fs";
 import crypto from "crypto";
+import DOMPurify from "isomorphic-dompurify";
 import { requireAdmin } from "../middleware/auth";
 import { env } from "../config/env";
 import { prisma } from "../prisma";
@@ -35,11 +36,11 @@ const storage = multer.memoryStorage();
 
 // 허용 파일 형식 필터
 const fileFilter = (_req: Request, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
-  const allowedTypes = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+  const allowedTypes = ["image/jpeg", "image/png", "image/webp", "image/gif", "image/svg+xml"];
   if (allowedTypes.includes(file.mimetype)) {
     cb(null, true);
   } else {
-    cb(new Error("허용되지 않는 파일 형식입니다. JPG, PNG, WEBP, GIF만 가능합니다."));
+    cb(new Error("허용되지 않는 파일 형식입니다. JPG, PNG, WEBP, GIF, SVG만 가능합니다."));
   }
 };
 
@@ -73,9 +74,20 @@ router.post(
     }
 
     try {
+      let fileBuffer = req.file.buffer;
+
+      // SVG 파일인 경우 XSS 방지를 위해 DOMPurify로 sanitize 처리
+      if (req.file.mimetype === "image/svg+xml") {
+        const svgString = fileBuffer.toString("utf-8");
+        const cleanSvgString = DOMPurify.sanitize(svgString, {
+          USE_PROFILES: { svg: true },
+        }) as string;
+        fileBuffer = Buffer.from(cleanSvgString, "utf-8");
+      }
+
       // 1. 파일 해시(SHA-256) 계산
       const hashSum = crypto.createHash("sha256");
-      hashSum.update(req.file.buffer);
+      hashSum.update(fileBuffer);
       const fileHash = hashSum.digest("hex");
 
       // 2. DB 중복 검사
@@ -94,7 +106,7 @@ router.post(
       const filename = `${fileHash}${ext}`;
       const filePath = path.join(UPLOADS_DIR, filename);
 
-      fs.writeFileSync(filePath, req.file.buffer);
+      fs.writeFileSync(filePath, fileBuffer);
       const url = `/uploads/${filename}`;
 
       // 4. DB에 메타데이터 기록
