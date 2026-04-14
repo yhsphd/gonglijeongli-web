@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref } from "vue";
+import { useRouter } from "vue-router";
 import { useAuthStore } from "@/stores/auth";
 import AdminModal from "@/components/common/AdminModal.vue";
 import FormInput from "@/components/common/FormInput.vue";
@@ -7,6 +8,7 @@ import { faGithub } from "@fortawesome/free-brands-svg-icons";
 import { faCodeBranch } from "@fortawesome/free-solid-svg-icons";
 
 const authStore = useAuthStore();
+const router = useRouter();
 
 // 빌드 정보
 const commitHash = __COMMIT_HASH__;
@@ -60,9 +62,14 @@ const handleLogout = async () => {
       </div>
     </div>
     <button v-if="!authStore.isAdmin" class="btn-admin" @click="openLoginModal">관리자</button>
-    <button v-else class="btn-admin btn-admin--active" @click="handleLogout">
-      로그아웃 ({{ authStore.username }})
-    </button>
+    <div v-else class="btn-admin-group">
+      <button class="btn-admin btn-admin--enter" @click="router.push({ name: 'admin' })">
+        관리자 페이지
+      </button>
+      <button class="btn-admin btn-admin--active" @click="handleLogout">
+        로그아웃 ({{ authStore.username }})
+      </button>
+    </div>
 
     <!-- 로그인 모달 -->
     <AdminModal
@@ -122,6 +129,15 @@ const handleLogout = async () => {
   opacity: 0.5;
 }
 
+.btn-admin-group {
+  position: absolute;
+  right: var(--spacing-md);
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  gap: var(--spacing-xs);
+}
+
 .btn-admin {
   position: absolute;
   right: var(--spacing-md);
@@ -137,9 +153,25 @@ const handleLogout = async () => {
   transition: all 0.2s;
 }
 
+.btn-admin-group .btn-admin {
+  position: static;
+  transform: none;
+}
+
 .btn-admin:hover {
   color: var(--color-text-primary);
   border-color: var(--color-text-primary);
+}
+
+.btn-admin--enter {
+  color: var(--color-primary, #409eff);
+  border-color: var(--color-primary, #409eff);
+}
+
+.btn-admin--enter:hover {
+  color: var(--color-primary, #409eff);
+  border-color: var(--color-primary, #409eff);
+  opacity: 0.8;
 }
 
 .btn-admin--active {
@@ -159,6 +191,12 @@ const handleLogout = async () => {
     flex-direction: column;
     align-items: center;
     gap: var(--spacing-md);
+  }
+
+  .btn-admin-group {
+    position: static;
+    transform: none;
+    margin-top: var(--spacing-sm);
   }
 
   .btn-admin {

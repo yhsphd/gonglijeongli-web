@@ -10,7 +10,9 @@ import { fetchEvents, type EventItem } from "@/api/events";
 import { fetchWorks, type WorkItem } from "@/api/works";
 // import GalleryCarousel from "@/components/home/GalleryCarousel.vue";
 
-const HOME_LIST_LIMIT = 5;
+const NEWS_LIST_LIMIT = 5;
+const EVENT_LIST_LIMIT = 6;
+const WORKS_LIST_LIMIT = 6;
 
 const newsItems = ref<NewsListItem[]>([]);
 const eventItems = ref<EventItem[]>([]);
@@ -27,9 +29,9 @@ const loadHomeData = async () => {
 
   try {
     const [newsRes, eventsRes, worksRes] = await Promise.all([
-      fetchNewsList(1, HOME_LIST_LIMIT),
-      fetchEvents(1, HOME_LIST_LIMIT),
-      fetchWorks(1, HOME_LIST_LIMIT),
+      fetchNewsList(1, NEWS_LIST_LIMIT),
+      fetchEvents(1, EVENT_LIST_LIMIT),
+      fetchWorks(1, WORKS_LIST_LIMIT),
     ]);
 
     newsItems.value = newsRes.items;

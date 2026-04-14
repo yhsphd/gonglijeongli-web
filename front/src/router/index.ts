@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from "vue-router";
 import DefaultLayout from "@/layouts/DefaultLayout.vue";
+import AdminLayout from "@/layouts/AdminLayout.vue";
 import { useAuthStore } from "@/stores/auth";
 
 const router = createRouter({
@@ -49,6 +50,19 @@ const router = createRouter({
           path: "gallery",
           name: "gallery",
           component: () => import("@/views/GalleryView.vue"),
+        },
+      ],
+    },
+    {
+      path: "/admin",
+      component: AdminLayout,
+      meta: { requiresAdmin: true },
+      children: [
+        {
+          path: "",
+          name: "admin",
+          component: () => import("@/views/admin/AdminView.vue"),
+          meta: { requiresAdmin: true, title: "대시보드" },
         },
       ],
     },
