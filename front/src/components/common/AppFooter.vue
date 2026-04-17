@@ -63,9 +63,9 @@ const handleLogout = async () => {
     </div>
     <button v-if="!authStore.isAdmin" class="btn-admin" @click="openLoginModal">관리자</button>
     <div v-else class="btn-admin-group">
-      <button class="btn-admin btn-admin--enter" @click="router.push({ name: 'admin' })">
+      <a :href="router.resolve({ name: 'admin' }).href" class="btn-admin btn-admin--enter">
         관리자 페이지
-      </button>
+      </a>
       <button class="btn-admin btn-admin--active" @click="handleLogout">
         로그아웃 ({{ authStore.username }})
       </button>
@@ -151,6 +151,11 @@ const handleLogout = async () => {
   font-size: var(--font-size-xs);
   cursor: pointer;
   transition: all 0.2s;
+  text-decoration: none;
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .btn-admin-group .btn-admin {

@@ -10,6 +10,7 @@ import authRoutes from "./routes/auth";
 import eventsRoutes from "./routes/events";
 import newsRoutes from "./routes/news";
 import worksRoutes from "./routes/works";
+import bannersRoutes from "./routes/banners";
 import uploadRoutes, { UPLOADS_DIR } from "./routes/upload";
 import { env } from "./config/env";
 
@@ -84,6 +85,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/events", eventsRoutes);
 app.use("/api/news", newsRoutes);
 app.use("/api/works", worksRoutes);
+app.use("/api/banners", bannersRoutes);
 app.use("/api/upload", uploadRoutes);
 
 // ─── 정적 파일 서빙 ───

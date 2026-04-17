@@ -31,9 +31,13 @@ const handleLogout = async () => {
         text-color="#c0c5cf"
         class="sidebar-menu"
       >
-        <el-menu-item index="admin">
+        <el-menu-item index="admin" :route="{ name: 'admin' }">
           <el-icon><i-ep-home-filled /></el-icon>
           <span>대시보드</span>
+        </el-menu-item>
+        <el-menu-item index="admin-banners" :route="{ name: 'admin-banners' }">
+          <el-icon><i-ep-picture /></el-icon>
+          <span>홈 배너 관리</span>
         </el-menu-item>
         <!-- 새로운 관리 메뉴는 여기에 추가 -->
       </el-menu>
@@ -49,10 +53,15 @@ const handleLogout = async () => {
             {{ authStore.username }}
           </span>
           <el-divider direction="vertical" />
-          <el-button type="danger" plain size="small" @click="handleLogout"> 로그아웃 </el-button>
-          <el-button size="small" @click="() => router.push({ name: 'home' })">
+          <el-button
+            size="small"
+            tag="a"
+            :href="router.resolve({ name: 'home' }).href"
+            style="text-decoration: none"
+          >
             사이트로
           </el-button>
+          <el-button type="danger" plain size="small" @click="handleLogout"> 로그아웃 </el-button>
         </div>
       </el-header>
 

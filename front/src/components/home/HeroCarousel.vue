@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { ref, onMounted } from "vue";
+import { fetchBanners, type BannerItem } from "@/api/banners";
 import { Carousel, Slide, Pagination, Navigation } from "vue3-carousel";
 import "vue3-carousel/carousel.css";
 
@@ -9,25 +11,32 @@ const carouselConfig = {
   autoplay: 5000,
 };
 
-const heroSrcRoot = "/assets/home/hero/";
-const heroList = [
-  { src: "bg.jpg", to: "#" },
-  { src: "books.jpg", to: "#" },
-  { src: "books2.jpg", to: "#" },
-  { src: "houraisai3.png", to: "#" },
-  { src: "postcards.jpg", to: "#" },
-];
+const banners = ref<BannerItem[]>([]);
+
+onMounted(async () => {
+  try {
+    banners.value = await fetchBanners(true); // activeOnly = true
+  } catch (error) {
+    console.error("배너를 불러오지 못했습니다:", error);
+  }
+});
 </script>
 
 <template>
-  <Carousel class="hero" v-bind="carouselConfig">
-    <Slide v-for="(item, i) in heroList" :key="i">
+  <Carousel v-if="banners && banners.length > 0" class="hero" v-bind="carouselConfig">
+    <Slide v-for="item in banners" :key="item.id">
       <div class="carousel__item">
-        <div
-          class="carousel__bg"
-          :style="{ backgroundImage: `url(${heroSrcRoot + item.src})` }"
-        ></div>
-        <img :src="heroSrcRoot + item.src" />
+        <div class="carousel__bg" :style="{ backgroundImage: `url(${item.imageUrl})` }"></div>
+        <a
+          v-if="item.linkUrl"
+          :href="item.linkUrl"
+          target="_blank"
+          rel="noopener noreferrer"
+          style="display: block; width: 100%; height: 100%; cursor: pointer"
+        >
+          <img :src="item.imageUrl" />
+        </a>
+        <img v-else :src="item.imageUrl" />
       </div>
     </Slide>
 
@@ -36,6 +45,8 @@ const heroList = [
       <Pagination />
     </template>
   </Carousel>
+  <!-- 배너가 없을 때 플레이스홀더 영역 보존용 -->
+  <div v-else class="hero hero-placeholder"></div>
 </template>
 
 <style scoped>

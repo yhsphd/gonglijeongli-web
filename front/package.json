@@ -37,6 +37,7 @@
     "element-plus": "^2.13.2",
     "lowlight": "^3.3.0",
     "pinia": "^3.0.4",
+    "sortablejs": "^1.15.7",
     "vue": "^3.5.27",
     "vue-custom-scrollbar": "^2.0.1",
     "vue-router": "^5.0.1",
@@ -45,6 +46,7 @@
   "devDependencies": {
     "@tsconfig/node24": "^24.0.4",
     "@types/node": "^24.10.9",
+    "@types/sortablejs": "^1.15.9",
     "@vitejs/plugin-vue": "^6.0.3",
     "@vue/tsconfig": "^0.8.1",
     "jiti": "^2.6.1",
