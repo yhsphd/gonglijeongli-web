@@ -6,6 +6,10 @@
 
 ## Tech Stack
 
+### Tooling & Infrastructure (Root)
+- **Monorepo**: Turborepo + npm workspaces
+- **CI/CD**: GitHub Actions
+
 ### Frontend (`front/`)
 
 - **Framework**: Vue 3 + TypeScript + Vite 7
@@ -20,42 +24,60 @@
 - **ORM**: Prisma 7 (Client + Migrate)
 - **Database**: SQLite (via @prisma/adapter-better-sqlite3) — 프로덕션 전환 가능
 - **Auth**: express-session (세션 쿠키 기반, 메모리 스토어)
-- **API Docs**: Swagger UI (swagger-ui-express + yamljs)
+- **API Docs**: Swagger UI (swagger-autogen 기반 자동 생성, swagger-output.json)
 - **Linting**: ESLint + oxlint, Prettier
 
 ## Project Structure
 
 ```
+.
+├── turbo.json                # Turborepo 설정 파일
+├── package.json              # npm workspaces 구성
 front/
 ├── src/
-│   ├── layouts/          # DefaultLayout wraps all routes
+│   ├── layouts/          # DefaultLayout (서비스 공통), AdminLayout (관리자 전용 레이아웃)
 │   ├── views/            # Page components
-│   │   ├── HomeView.vue, AboutView.vue, GalleryView.vue, EventsView.vue, WorksView.vue
-│   │   └── news/         # News 관련 뷰 (하위 폴더로 정리)
-│   │       ├── IndexView.vue   # 뉴스 목록
-│   │       ├── DetailView.vue  # 뉴스 상세
-│   │       └── WriteView.vue   # 뉴스 작성/수정
+│   │   ├── HomeView.vue, AboutView.vue, GalleryView.vue, EventsView.vue, WorksView.vue, NewsView.vue
+│   │   ├── news/         # News 관련 하위 뷰
+│   │   │   ├── DetailView.vue  # 뉴스 상세
+│   │   │   └── WriteView.vue   # 뉴스 작성/수정
+│   │   └── admin/        # 관리자 전용 뷰
+│   │       ├── AdminView.vue        # 관리자 대시보드
+│   │       └── BannersAdminView.vue # 메인 배너 관리
 │   ├── api/              # 백엔드 API 호출 서비스
 │   │   ├── client.ts         # fetch 래퍼 (baseURL, credentials, 에러 처리)
 │   │   ├── auth.ts           # 로그인/로그아웃/세션 확인
-│   │   └── events.ts         # 행사 CRUD + 타입 정의
+│   │   ├── banners.ts        # 배너 CRUD
+│   │   ├── events.ts         # 행사 CRUD + 타입 정의
+│   │   ├── news.ts           # 공지사항 CRUD + 타입 정의
+│   │   └── works.ts          # 작품 CRUD + 타입 정의
 │   ├── stores/           # Pinia 스토어
 │   │   └── auth.ts           # 인증 상태 (isAdmin, login, logout, checkAuth)
+│   ├── composables/      # 재사용 가능한 로직 (Composition API)
+│   │   ├── useEditorExtensions.ts # Tiptap 에디터 커스텀 확장
+│   │   └── useImageDragDrop.ts    # 이미지 드래그 앤 드롭 업로드 로직
 │   ├── components/
 │   │   ├── common/       # 공통 재사용 컴포넌트
 │   │   │   ├── AppHeader.vue, AppFooter.vue (관리자 로그인 모달 포함)
 │   │   │   ├── PageHeader.vue      # 페이지 제목 + 설명
 │   │   │   ├── AppPagination.vue   # 페이지네이션 (슬롯 지원)
 │   │   │   ├── AdminModal.vue      # 관리자 모달 래퍼
+│   │   │   ├── BaseImageSelector.vue # 이미지 업로드 및 URL 입력 공통 컴포넌트
 │   │   │   ├── ContentCard.vue     # 썸네일 + 콘텐츠 카드 (행사/작품)
 │   │   │   ├── CardActions.vue     # 카드 편집/삭제 버튼
 │   │   │   ├── FormInput.vue       # 라벨 포함 입력 필드
-│   │   │   ├── TiptapEditor.vue    # 리치 텍스트 에디터
+│   │   │   ├── ImageUpload.vue     # 이미지 업로드 컴포넌트
+│   │   │   ├── ImageUploadDialog.vue # 리치 텍스트 내부용 이미지 업로드 모달
+│   │   │   ├── TiptapEditor.vue    # 리치 텍스트 에디터 (이미지 업로드 연동)
 │   │   │   └── TiptapRenderer.vue  # 리치 텍스트 렌더러
-│   │   └── home/         # Home-specific: HeroCarousel, GalleryCarousel, ListBox
+│   │   ├── home/         # Home-specific
+│   │   │   ├── HeroCarousel.vue, GalleryCarousel.vue, ListBox.vue, PostEntry.vue, ThumbEntry.vue
+│   │   └── news/         # News-specific
+│   │       └── NewsTableRow.vue    # 뉴스 리스트 행 항목
+│   ├── extensions/       # Tiptap 커스텀 노드 등 확장 기능
 │   ├── assets/
 │   │   └── styles/       # root.css (CSS variables), main.css
-│   └── router/           # Nested routes under DefaultLayout
+│   └── router/           # Router (DefaultLayout 및 AdminLayout 분기 처리)
 └── public/assets/        # Static images (hero/, gallery/, events/, news/, works/)
 
 back/
@@ -64,17 +86,27 @@ back/
 │   ├── seed.ts               # 초기 데이터 삽입 스크립트
 │   └── migrations/           # 자동 생성된 마이그레이션
 ├── prisma.config.ts          # Prisma 7.x 설정 (DB URL, 시드)
-├── swagger.yaml              # OpenAPI 3.0 API 명세
+├── swagger.js                # swagger-autogen 설정 스크립트
 ├── .env                      # 환경변수 (gitignore됨)
 ├── src/
 │   ├── index.ts              # Express 앱 (CORS, 세션, 라우트 등록)
 │   ├── prisma.ts             # Prisma Client 싱글턴 (어댑터 포함)
+│   ├── swagger-output.json   # 자동 생성된 OpenAPI 3.0 명세
+│   ├── config/
+│   │   └── env.ts            # 환경변수 타입 검증 및 파싱
 │   ├── middleware/
 │   │   └── auth.ts           # requireAdmin 미들웨어
 │   ├── routes/
 │   │   ├── auth.ts           # POST /login, /logout, GET /me
-│   │   └── events.ts         # GET/POST/PUT/DELETE /api/events
+│   │   ├── banners.ts        # GET/POST/PUT/DELETE /api/banners (배너 관리)
+│   │   ├── events.ts         # GET/POST/PUT/DELETE /api/events
+│   │   ├── news.ts           # GET/POST/PUT/DELETE /api/news
+│   │   ├── works.ts          # GET/POST/PUT/DELETE /api/works
+│   │   └── upload.ts         # POST /api/upload (이미지 단건/다중 업로드)
+│   ├── utils/
+│   │   └── imageTracker.ts   # 사용되지 않는 이미지 가비지 컬렉션 처리
 │   └── generated/prisma/     # Prisma 자동 생성 (gitignore됨)
+├── uploads/                  # 업로드된 로컬 미디어 저장소 (gitignore됨)
 └── dev.db                    # SQLite DB 파일 (gitignore됨)
 ```
 
@@ -115,13 +147,14 @@ router.delete("/:id", requireAdmin, async (req, res) => { ... }); // 삭제
 
 - Prisma `select`로 필요한 필드만 반환 (createdAt/updatedAt 제외)
 - 페이지네이션: `skip` / `take` + `count()`로 서버 사이드 처리
+- 이미지 첨부: `utils/imageTracker.ts`를 활용하여 생성/수정/삭제 시 미사용 이미지 가비지 컬렉션
 - 응답 형식: `{ items: T[], total: number }`
 
 ### Swagger
 
-- `swagger.yaml`에 OpenAPI 3.0 명세 정의
+- `swagger.js`의 `swagger-autogen`을 사용하여 JSDoc 주석 및 미들웨어 기반으로 `src/swagger-output.json` 자동 생성
+- 빌드 시 자동으로 반영되므로 `swagger.yaml` 수기 관리 불필요
 - `/api-docs`에서 Swagger UI 제공
-- 새 라우트 추가 시 swagger.yaml도 함께 업데이트
 
 ## Frontend-Backend Integration
 
@@ -192,8 +225,19 @@ Element Plus 컴포넌트와 API는 자동 import됨 (unplugin-auto-import, unpl
 
 ## Commands
 
-### Frontend
+전체 프로젝트는 Turborepo로 관리되며 루트 폴더에서 명령어를 실행할 수 있습니다.
 
+```bash
+# Root 레벨 명령어 (전체 워크스페이스 적용)
+npm install      # 의존성 설치
+npm run dev      # 프론트엔드와 백엔드 서버 동시 실행
+npm run build    # 전체 프로젝트 빌드
+npm run lint     # 프론트엔드/백엔드 린트 검사
+```
+
+단일 워크스페이스에서 개별적으로 작업할 때:
+
+### Frontend
 ```bash
 cd front
 npm run dev          # 개발 서버 (http://localhost:5173)
@@ -203,15 +247,13 @@ npm run lint         # oxlint + eslint (순차 실행)
 ```
 
 ### Backend
-
 ```bash
 cd back
 npm run dev              # nodemon 개발 서버 (http://localhost:3000)
-npm run build            # TypeScript 컴파일
-npx prisma generate      # Prisma Client 생성 (최초 1회 / 스키마 변경 시)
-npx prisma migrate dev --name <설명>  # 마이그레이션 생성 + 적용
-npx prisma db seed       # 시드 데이터 삽입
-npx prisma studio        # DB GUI 뷰어 (브라우저)
+npm run build            # TypeScript 컴파일 및 Swagger 자동 생성
+npx prisma generate      # Prisma Client 생성
+npx prisma migrate dev   # 마이그레이션 적용
+npx prisma studio        # DB GUI
 ```
 
 ## Key Conventions

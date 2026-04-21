@@ -1,5 +1,6 @@
-/raw_artworks
-/ai-artifacts
+/_raw_artworks
+/_ai-artifacts
+/_tools
 node_modules
 .cache
 .turbo
