@@ -22,6 +22,7 @@
 import { Router, Request, Response } from "express";
 import { prisma } from "../prisma";
 import { requireAdmin } from "../middleware/auth";
+import { requireFeatureEnabled } from "../middleware/featureGuard";
 import { extractLocalImageUrls, syncImageReferences } from "../utils/imageTracker";
 
 const router = Router();
@@ -39,7 +40,7 @@ const router = Router();
  *   total: number       ← 전체 아이템 수 (프론트에서 totalPages 계산용)
  * }
  */
-router.get("/", async (req: Request, res: Response) => {
+router.get("/", requireFeatureEnabled("showEventsTab"), async (req: Request, res: Response) => {
   // #swagger.tags = ['Events']
   // #swagger.summary = '행사 목록 조회 (페이지네이션)'
   // #swagger.parameters['page'] = { in: 'query', type: 'integer', description: '페이지 번호' }

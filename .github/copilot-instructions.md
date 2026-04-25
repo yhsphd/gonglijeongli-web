@@ -7,6 +7,7 @@
 ## Tech Stack
 
 ### Tooling & Infrastructure (Root)
+
 - **Monorepo**: Turborepo + npm workspaces
 - **CI/CD**: GitHub Actions
 
@@ -238,6 +239,7 @@ npm run lint     # 프론트엔드/백엔드 린트 검사
 단일 워크스페이스에서 개별적으로 작업할 때:
 
 ### Frontend
+
 ```bash
 cd front
 npm run dev          # 개발 서버 (http://localhost:5173)
@@ -247,6 +249,7 @@ npm run lint         # oxlint + eslint (순차 실행)
 ```
 
 ### Backend
+
 ```bash
 cd back
 npm run dev              # nodemon 개발 서버 (http://localhost:3000)

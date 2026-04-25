@@ -16,7 +16,7 @@ const handleLogout = async () => {
 </script>
 
 <template>
-  <el-container class="admin-layout">
+  <el-container class="master-admin-layout">
     <!-- Sidebar -->
     <el-aside width="220px" class="admin-sidebar">
       <div class="sidebar-logo">
@@ -38,6 +38,10 @@ const handleLogout = async () => {
         <el-menu-item index="admin-banners" :route="{ name: 'admin-banners' }">
           <el-icon><i-ep-picture /></el-icon>
           <span>홈 배너 관리</span>
+        </el-menu-item>
+        <el-menu-item index="admin-config" :route="{ name: 'admin-config' }">
+          <el-icon><i-ep-setting /></el-icon>
+          <span>사이트 설정</span>
         </el-menu-item>
         <!-- 새로운 관리 메뉴는 여기에 추가 -->
       </el-menu>
@@ -74,7 +78,7 @@ const handleLogout = async () => {
 </template>
 
 <style scoped>
-.admin-layout {
+.master-admin-layout {
   height: 100vh;
   overflow: hidden;
 

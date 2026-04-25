@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
+import { onMounted, ref, watch } from "vue";
 import { RouterLink } from "vue-router";
 import ListBox from "@/components/home/ListBox.vue";
 import PostEntry from "@/components/home/PostEntry.vue";
@@ -8,7 +8,12 @@ import HeroCarousel from "@/components/home/HeroCarousel.vue";
 import { fetchNewsList, type NewsListItem } from "@/api/news";
 import { fetchEvents, type EventItem } from "@/api/events";
 import { fetchWorks, type WorkItem } from "@/api/works";
+import { useConfigStore } from "@/stores/config";
+import { useAuthStore } from "@/stores/auth";
 // import GalleryCarousel from "@/components/home/GalleryCarousel.vue";
+
+const configStore = useConfigStore();
+const authStore = useAuthStore();
 
 const NEWS_LIST_LIMIT = 5;
 const EVENT_LIST_LIMIT = 6;
@@ -28,15 +33,34 @@ const loadHomeData = async () => {
   isLoadingWorks.value = true;
 
   try {
-    const [newsRes, eventsRes, worksRes] = await Promise.all([
-      fetchNewsList(1, NEWS_LIST_LIMIT),
-      fetchEvents(1, EVENT_LIST_LIMIT),
-      fetchWorks(1, WORKS_LIST_LIMIT),
-    ]);
+    const promises = [];
+    const isAdmin = authStore.isAdmin;
 
-    newsItems.value = newsRes.items;
-    eventItems.value = eventsRes.items;
-    workItems.value = worksRes.items;
+    if (configStore.config?.showNewsBox || isAdmin) {
+      promises.push(
+        fetchNewsList(1, NEWS_LIST_LIMIT).then((res) => {
+          newsItems.value = res.items;
+        })
+      );
+    }
+
+    if (configStore.config?.showEventsBox || isAdmin) {
+      promises.push(
+        fetchEvents(1, EVENT_LIST_LIMIT).then((res) => {
+          eventItems.value = res.items;
+        })
+      );
+    }
+
+    if (configStore.config?.showWorksBox || isAdmin) {
+      promises.push(
+        fetchWorks(1, WORKS_LIST_LIMIT).then((res) => {
+          workItems.value = res.items;
+        })
+      );
+    }
+
+    await Promise.all(promises);
   } catch (error) {
     console.error("홈 데이터 로드 실패:", error);
   } finally {
@@ -46,8 +70,19 @@ const loadHomeData = async () => {
   }
 };
 
+watch(
+  () => configStore.isLoaded,
+  (loaded) => {
+    if (loaded) {
+      loadHomeData();
+    }
+  }
+);
+
 onMounted(() => {
-  loadHomeData();
+  if (configStore.isLoaded) {
+    loadHomeData();
+  }
 });
 </script>
 
@@ -57,9 +92,9 @@ onMounted(() => {
     <HeroCarousel />
 
     <!-- Content Section -->
-    <div class="list-boxes">
+    <div class="list-boxes" v-if="configStore.isLoaded">
       <!-- NEWS -->
-      <ListBox title="News">
+      <ListBox title="News" v-if="configStore.config?.showNewsBox || authStore.isAdmin">
         <p v-if="isLoadingNews" class="empty-state">불러오는 중...</p>
         <p v-else-if="newsItems.length === 0" class="empty-state">표시할 소식이 없습니다.</p>
         <template v-else>
@@ -80,7 +115,7 @@ onMounted(() => {
       </ListBox>
 
       <!-- EVENTS -->
-      <ListBox title="Events">
+      <ListBox title="Events" v-if="configStore.config?.showEventsBox || authStore.isAdmin">
         <p v-if="isLoadingEvents" class="empty-state">불러오는 중...</p>
         <p v-else-if="eventItems.length === 0" class="empty-state">표시할 행사가 없습니다.</p>
         <div v-else class="events-grid">
@@ -96,12 +131,12 @@ onMounted(() => {
       </ListBox>
 
       <!-- GALLERY -->
-      <!-- <ListBox title="Gallery" class="gallery-box">
+      <!-- <ListBox title="Gallery" class="gallery-box" v-if="configStore.config?.showGalleryBox || authStore.isAdmin">
         <GalleryCarousel />
       </ListBox> -->
 
       <!-- WORKS -->
-      <ListBox title="Works">
+      <ListBox title="Works" v-if="configStore.config?.showWorksBox || authStore.isAdmin">
         <p v-if="isLoadingWorks" class="empty-state">불러오는 중...</p>
         <p v-else-if="workItems.length === 0" class="empty-state">표시할 작품이 없습니다.</p>
         <div v-else class="works-grid">

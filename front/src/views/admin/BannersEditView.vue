@@ -184,8 +184,8 @@ const handleSave = async () => {
 </script>
 
 <template>
-  <div class="banner-admin">
-    <el-card>
+  <div class="master-banners-edit-view">
+    <el-card shadow="never">
       <template #header>
         <div class="card-header">
           <span>메인 배너 (Hero Carousel) 관리</span>
@@ -266,9 +266,10 @@ const handleSave = async () => {
 </template>
 
 <style scoped>
-.banner-admin {
+.master-banners-edit-view {
   width: 100%;
 }
+
 .card-header {
   display: flex;
   justify-content: space-between;

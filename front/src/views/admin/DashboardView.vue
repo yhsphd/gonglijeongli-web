@@ -4,7 +4,7 @@
 </script>
 
 <template>
-  <div class="dashboard">
+  <div class="master-dashboard-view">
     <el-row :gutter="16">
       <el-col :span="8">
         <el-card shadow="never" class="stat-card">
@@ -49,7 +49,7 @@
 </template>
 
 <style scoped>
-.dashboard {
+.master-dashboard-view {
   max-width: 1200px;
 }
 

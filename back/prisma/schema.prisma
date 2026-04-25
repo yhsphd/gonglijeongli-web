@@ -98,3 +98,22 @@ model Banner {
   @@map("banners")
 }
 
+
+model SiteConfig {
+  id             Int     @id @default(1)
+  
+  // 탭 표시 여부
+  showAboutTab   Boolean @default(true)
+  showNewsTab    Boolean @default(true)
+  showEventsTab  Boolean @default(true)
+  showWorksTab   Boolean @default(true)
+  showGalleryTab Boolean @default(true)
+
+  // 홈 화면 박스 표시 여부
+  showAboutBox   Boolean @default(true)
+  showNewsBox    Boolean @default(true)
+  showEventsBox  Boolean @default(true)
+  showWorksBox   Boolean @default(true)
+  showGalleryBox Boolean @default(true)
+
+}

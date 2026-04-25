@@ -10,6 +10,7 @@
 import { Router, Request, Response } from "express";
 import { prisma } from "../prisma";
 import { requireAdmin } from "../middleware/auth";
+import { requireFeatureEnabled } from "../middleware/featureGuard";
 import { extractLocalImageUrls, syncImageReferences } from "../utils/imageTracker";
 
 const router = Router();
@@ -17,7 +18,7 @@ const router = Router();
 /**
  * GET /api/works?page=1&limit=9
  */
-router.get("/", async (req: Request, res: Response) => {
+router.get("/", requireFeatureEnabled("showWorksTab"), async (req: Request, res: Response) => {
   // #swagger.tags = ['Works']
   // #swagger.summary = '작품 목록 조회 (페이지네이션)'
   // #swagger.parameters['page'] = { in: 'query', type: 'integer', description: '페이지 번호' }

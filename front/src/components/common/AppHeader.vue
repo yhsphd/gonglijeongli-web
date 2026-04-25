@@ -1,21 +1,33 @@
 <script setup lang="ts">
 import { ref, computed } from "vue";
 import { RouterLink, useRoute } from "vue-router";
+import { useConfigStore } from "@/stores/config";
+import { useAuthStore } from "@/stores/auth";
 
 const route = useRoute();
+const configStore = useConfigStore();
+const authStore = useAuthStore();
 const isMobileMenuOpen = ref(false);
 
 const toggleMobileMenu = () => {
   isMobileMenuOpen.value = !isMobileMenuOpen.value;
 };
 
-const menus = [
-  { label: ["소개", "About"], to: "/about" },
-  { label: ["소식", "News"], to: "/news" },
-  { label: ["행사", "Events"], to: "/events" },
-  { label: ["작품", "Works"], to: "/works" },
-  { label: ["갤러리", "Gallery"], to: "/gallery" },
-];
+const menus = computed(() => {
+  const allMenus = [];
+  const isAdmin = authStore.isAdmin;
+  if (configStore.config?.showAboutTab || isAdmin)
+    allMenus.push({ label: ["소개", "About"], to: "/about" });
+  if (configStore.config?.showNewsTab || isAdmin)
+    allMenus.push({ label: ["소식", "News"], to: "/news" });
+  if (configStore.config?.showEventsTab || isAdmin)
+    allMenus.push({ label: ["행사", "Events"], to: "/events" });
+  if (configStore.config?.showWorksTab || isAdmin)
+    allMenus.push({ label: ["작품", "Works"], to: "/works" });
+  if (configStore.config?.showGalleryTab || isAdmin)
+    allMenus.push({ label: ["갤러리", "Gallery"], to: "/gallery" });
+  return allMenus;
+});
 
 const currentPath = computed(() => route.path);
 
@@ -29,7 +41,7 @@ const isMenuActive = (menuPath: string) => {
 
 // 모바일 드롭다운 버튼에 표시될 현재 메뉴 이름
 const currentMenuLabel = computed(() => {
-  const activeMenu = menus.find((m) => isMenuActive(m.to));
+  const activeMenu = menus.value.find((m) => isMenuActive(m.to));
   return activeMenu ? activeMenu.label[0] : "홈";
 });
 </script>

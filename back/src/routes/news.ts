@@ -1,6 +1,7 @@
 import { Router, Request, Response } from "express";
 import { prisma } from "../prisma";
 import { requireAdmin } from "../middleware/auth";
+import { requireFeatureEnabled } from "../middleware/featureGuard";
 import { extractLocalImageUrls, syncImageReferences } from "../utils/imageTracker";
 
 const router = Router();
@@ -35,7 +36,7 @@ function extractFirstImageFromTiptap(doc: unknown): string | null {
  *
  * 페이지네이션된 뉴스 목록을 반환합니다.
  */
-router.get("/", async (req: Request, res: Response) => {
+router.get("/", requireFeatureEnabled("showNewsTab"), async (req: Request, res: Response) => {
   // #swagger.tags = ['News']
   // #swagger.summary = '뉴스 목록 조회 (페이지네이션)'
   // #swagger.parameters['page'] = { in: 'query', type: 'integer', description: '페이지 번호' }
@@ -76,7 +77,7 @@ router.get("/", async (req: Request, res: Response) => {
  * GET /api/news/:id
  * 뉴스 상세 조회 (및 조회수 1 증가)
  */
-router.get("/:id", async (req: Request, res: Response) => {
+router.get("/:id", requireFeatureEnabled("showNewsTab"), async (req: Request, res: Response) => {
   // #swagger.tags = ['News']
   // #swagger.summary = '뉴스 상세 조회'
   // #swagger.parameters['id'] = { description: '뉴스 ID' }

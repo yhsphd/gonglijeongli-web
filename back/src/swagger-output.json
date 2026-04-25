@@ -141,6 +141,9 @@
           "200": {
             "description": "OK"
           },
+          "403": {
+            "description": "Forbidden"
+          },
           "500": {
             "description": "Internal Server Error"
           }
@@ -414,6 +417,9 @@
           "200": {
             "description": "OK"
           },
+          "403": {
+            "description": "Forbidden"
+          },
           "500": {
             "description": "Internal Server Error"
           }
@@ -519,6 +525,9 @@
           },
           "400": {
             "description": "Bad Request"
+          },
+          "403": {
+            "description": "Forbidden"
           },
           "404": {
             "description": "Not Found"
@@ -691,6 +700,9 @@
         "responses": {
           "200": {
             "description": "OK"
+          },
+          "403": {
+            "description": "Forbidden"
           },
           "500": {
             "description": "Internal Server Error"
@@ -1144,6 +1156,74 @@
             "cookieAuth": []
           }
         ]
+      }
+    },
+    "/api/config/": {
+      "get": {
+        "description": "",
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      },
+      "put": {
+        "description": "",
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "showAboutTab": {
+                    "example": "any"
+                  },
+                  "showNewsTab": {
+                    "example": "any"
+                  },
+                  "showEventsTab": {
+                    "example": "any"
+                  },
+                  "showWorksTab": {
+                    "example": "any"
+                  },
+                  "showGalleryTab": {
+                    "example": "any"
+                  },
+                  "showAboutBox": {
+                    "example": "any"
+                  },
+                  "showNewsBox": {
+                    "example": "any"
+                  },
+                  "showEventsBox": {
+                    "example": "any"
+                  },
+                  "showWorksBox": {
+                    "example": "any"
+                  },
+                  "showGalleryBox": {
+                    "example": "any"
+                  }
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/api/upload/": {
