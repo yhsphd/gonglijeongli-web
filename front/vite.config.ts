@@ -39,6 +39,7 @@ export default defineConfig({
     },
   },
   server: {
+    host: true,
     allowedHosts: true,
     proxy: {
       // /api/* 요청을 백엔드 서버로 프록시

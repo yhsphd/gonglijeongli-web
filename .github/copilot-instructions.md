@@ -44,7 +44,8 @@ front/
 │   │   │   └── WriteView.vue   # 뉴스 작성/수정
 │   │   └── admin/        # 관리자 전용 뷰
 │   │       ├── AdminView.vue        # 관리자 대시보드
-│   │       └── BannersAdminView.vue # 메인 배너 관리
+│   │       ├── BannersAdminView.vue # 메인 배너 관리
+│   │       └── ToggleFeaturesView.vue # 사이트 탭/박스 표시 설정
 │   ├── api/              # 백엔드 API 호출 서비스
 │   │   ├── client.ts         # fetch 래퍼 (baseURL, credentials, 에러 처리)
 │   │   ├── auth.ts           # 로그인/로그아웃/세션 확인
@@ -53,7 +54,8 @@ front/
 │   │   ├── news.ts           # 공지사항 CRUD + 타입 정의
 │   │   └── works.ts          # 작품 CRUD + 타입 정의
 │   ├── stores/           # Pinia 스토어
-│   │   └── auth.ts           # 인증 상태 (isAdmin, login, logout, checkAuth)
+│   │   ├── auth.ts           # 인증 상태 (isAdmin, login, logout, checkAuth)
+│   │   └── config.ts         # 상태 토글 설정 (show*Tab, show*Box 등)
 │   ├── composables/      # 재사용 가능한 로직 (Composition API)
 │   │   ├── useEditorExtensions.ts # Tiptap 에디터 커스텀 확장
 │   │   └── useImageDragDrop.ts    # 이미지 드래그 앤 드롭 업로드 로직
@@ -78,7 +80,7 @@ front/
 │   ├── extensions/       # Tiptap 커스텀 노드 등 확장 기능
 │   ├── assets/
 │   │   └── styles/       # root.css (CSS variables), main.css
-│   └── router/           # Router (DefaultLayout 및 AdminLayout 분기 처리)
+│   └── router/           # Router (DefaultLayout 및 AdminLayout 분기 처리, Navigation Guard로 숨김 탭 접근 차단)
 └── public/assets/        # Static images (hero/, gallery/, events/, news/, works/)
 
 back/
@@ -96,7 +98,8 @@ back/
 │   ├── config/
 │   │   └── env.ts            # 환경변수 타입 검증 및 파싱
 │   ├── middleware/
-│   │   └── auth.ts           # requireAdmin 미들웨어
+│   │   ├── auth.ts           # requireAdmin 미들웨어
+│   │   └── featureGuard.ts   # requireFeatureEnabled 미들웨어 (비활성 기능 API 차단 / 관리자 예외)
 │   ├── routes/
 │   │   ├── auth.ts           # POST /login, /logout, GET /me
 │   │   ├── banners.ts        # GET/POST/PUT/DELETE /api/banners (배너 관리)
@@ -265,5 +268,6 @@ npx prisma studio        # DB GUI
 2. **Object-fit 그림자**: `contain`/`cover` 이미지에 그림자 적용 시 `box-shadow` 대신 `filter: drop-shadow()` 사용
 3. **알리아스**: `@/` = `src/` 폴더
 4. **API 서비스**: `api/` 폴더에 도메인별 파일로 분리, `api/client.ts`의 `api()` 함수 사용
-5. **인증 확인**: 관리자 전용 UI는 `authStore.isAdmin`으로 조건부 렌더링
-6. **환경변수**: 프론트 `VITE_*`, 백엔드 `.env` (dotenv)
+5. **인증 확인**: 관리자 전용 UI는 `authStore.isAdmin`으로 조건부 렌더링. 관리자는 숨김 처리된 모든 라우트, UI, API에 접근 및 노출됨.
+6. **기능 토글 (Feature Flags)**: SiteConfig는 Tab 표시(`show*Tab`)와 홈 화면 Box 표시(`show*Box`)를 따로 구분. 관리자 패널에서는 `FULL`, `TAB`, `HIDDEN` 3단계 상태로 맵핑 지원. 백엔드는 `featureGuard.ts`, 프론트는 `router.beforeEach(meta.configKey)`를 활용해 비활성화 기능 접근 원천 차단.
+7. **환경변수**: 프론트 `VITE_*`, 백엔드 `.env` (dotenv)
